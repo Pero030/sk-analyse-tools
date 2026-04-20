@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Priorisierungstool mit Score</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-strong: #f1f5f9;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --danger: #c62828;
+      --danger-hover: #a61f1f;
+      --success: #13795b;
+      --success-hover: #0f6148;
+      --warning: #b26a00;
+      --warning-hover: #945700;
+      --info: #225ea8;
+      --info-hover: #1a4a84;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --input-height: 44px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #ffffff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 960px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel,
+    .summary,
+    .table-panel,
+    .matrix-panel,
+    .note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h2,
+    .summary h2,
+    .table-panel h2,
+    .matrix-panel h2,
+    .note h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section + .section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field + .field {
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input,
+    select {
+      min-height: var(--input-height);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    button {
+      min-height: var(--input-height);
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background: var(--warning-hover);
+    }
+
+    .btn-info {
+      background: var(--info);
+      color: #fff;
+    }
+
+    .btn-info:hover {
+      background: var(--info-hover);
+    }
+
+    .btn-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .summary {
+      padding: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .card .value {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .matrix-panel {
+      padding: 20px;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 120px repeat(5, 1fr);
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .matrix-header,
+    .matrix-side,
+    .matrix-cell {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      min-height: 90px;
+      background: #fff;
+    }
+
+    .matrix-header,
+    .matrix-side {
+      background: var(--surface-strong);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .matrix-side {
+      min-height: 120px;
+    }
+
+    .matrix-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    .matrix-cell.low {
+      background: #e8f7ee;
+    }
+
+    .matrix-cell.medium {
+      background: #fff4e7;
+    }
+
+    .matrix-cell.high {
+      background: #fff1f1;
+    }
+
+    .matrix-chip {
+      display: inline-block;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.08);
+      font-weight: 700;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
+    .table-head {
+      padding: 20px 20px 0;
+    }
+
+    .table-head p {
+      margin: 6px 0 0;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 18px 20px 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 1700px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      text-align: center;
+      vertical-align: top;
+      background: #fff;
+    }
+
+    th {
+      background: var(--surface-strong);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    tr:last-child td,
+    tr:last-child th {
+      border-bottom: 0;
+    }
+
+    tr th:last-child,
+    tr td:last-child {
+      border-right: 0;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .small-input,
+    .text-input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .text-input {
+      text-align: left;
+    }
+
+    .small-input {
+      text-align: center;
+    }
+
+    .priority-low {
+      background: #e8f7ee !important;
+    }
+
+    .priority-medium {
+      background: #fff4e7 !important;
+    }
+
+    .priority-high {
+      background: #fff1f1 !important;
+    }
+
+    .strong-value {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .sub-value {
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 18px 20px;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    .empty {
+      color: var(--text-soft);
+      padding: 18px;
+      text-align: center;
+      background: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .matrix-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .matrix-header,
+      .matrix-side {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 16px 12px 28px;
+      }
+
+      .hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Priorisierungstool mit Score</h1>
+      <p>
+        Themen, Aufgaben, Features oder Maßnahmen nach Impact, Aufwand, Dringlichkeit, Risiko und strategischer Relevanz bewerten.
+        Das Tool berechnet automatisch einen Prioritätsscore und zeigt klar, was zuerst gemacht werden sollte.
+      </p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Eintrag hinzufügen</h2>
+          <div class="field">
+            <label for="newTitle">Titel</label>
+            <input id="newTitle" type="text" placeholder="z. B. Filterlogik verbessern" />
+          </div>
+          <div class="field">
+            <label for="newCategory">Kategorie</label>
+            <input id="newCategory" type="text" placeholder="z. B. UX / SEO / Technik" />
+          </div>
+          <div class="field">
+            <label for="newImpact">Impact (1–5)</label>
+            <select id="newImpact">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newEffort">Aufwand (1–5)</label>
+            <select id="newEffort">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newUrgency">Dringlichkeit (1–5)</label>
+            <select id="newUrgency">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newRisk">Risiko bei Nicht-Umsetzung (1–5)</label>
+            <select id="newRisk">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newStrategic">Strategische Relevanz (1–5)</label>
+            <select id="newStrategic">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newOwner">Verantwortlich</label>
+            <input id="newOwner" type="text" placeholder="z. B. Shop Team" />
+          </div>
+          <div class="field">
+            <label for="newNote">Notiz</label>
+            <textarea id="newNote" placeholder="z. B. beeinflusst Conversion und Filterbarkeit"></textarea>
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addItemBtn">Eintrag hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveLocalBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadLocalBtn">Gespeicherten Stand laden</button>
+            <button class="btn-warning" id="exportTxtBtn">Als TXT exportieren</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="label">Einträge gesamt</div>
+              <div class="value" id="countItems">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Hohe Priorität</div>
+              <div class="value" id="countHigh">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Mittlere Priorität</div>
+              <div class="value" id="countMedium">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Niedrige Priorität</div>
+              <div class="value" id="countLow">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Top-Priorität</div>
+              <div class="value" id="topItem">-</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="matrix-panel">
+          <h2>Prioritätsmatrix</h2>
+          <div class="matrix-grid" id="priorityMatrix"></div>
+        </section>
+
+        <section class="table-panel">
+          <div class="table-head">
+            <h2>Auswertung</h2>
+            <p>
+              Formel: (Impact × 3) + (Dringlichkeit × 2) + (Risiko × 2) + (Strategische Relevanz × 2) − Aufwand.
+              Ab 25 = hoch, ab 16 = mittel, darunter niedrig.
+            </p>
+          </div>
+
+          <div class="table-wrap">
+            <table id="analysisTable" aria-label="Tabelle der Priorisierung"></table>
+          </div>
+        </section>
+
+        <section class="note">
+          <h2>Hinweis</h2>
+          <p class="muted">
+            Dieses Tool ist ideal für Backlogs, Shop-Optimierungen, Feature-Entscheidungen, SEO-Maßnahmen,
+            Technik-Themen und interne Aufgabenlisten. Es liefert eine echte Reihenfolge statt nur Bauchgefühl.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'priorisierung_score_app_data_v1';
+
+    let state = {
+      items: []
+    };
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    const exampleData = {
+      items: [
+        {
+          id: uid(),
+          title: 'Filterlogik verbessern',
+          category: 'UX',
+          impact: 5,
+          effort: 3,
+          urgency: 5,
+          risk: 4,
+          strategic: 5,
+          owner: 'Shop Team',
+          note: 'Beeinflusst Navigation und Conversion'
+        },
+        {
+          id: uid(),
+          title: 'Neue Kategorieseite textlich überarbeiten',
+          category: 'SEO',
+          impact: 4,
+          effort: 2,
+          urgency: 3,
+          risk: 2,
+          strategic: 4,
+          owner: 'Content',
+          note: 'Verbessert Auffindbarkeit und Klarheit'
+        },
+        {
+          id: uid(),
+          title: 'Header grafisch modernisieren',
+          category: 'Design',
+          impact: 2,
+          effort: 4,
+          urgency: 2,
+          risk: 1,
+          strategic: 2,
+          owner: 'Design',
+          note: 'Optisch sinnvoll, aber nicht kritisch'
+        },
+        {
+          id: uid(),
+          title: 'Produktdaten zu Pflichtangaben prüfen',
+          category: 'Compliance',
+          impact: 5,
+          effort: 4,
+          urgency: 5,
+          risk: 5,
+          strategic: 5,
+          owner: 'Produktdaten',
+          note: 'Rechtliches Risiko'
+        }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.items)) return false;
+        state = parsed;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function persistAndRender() {
+      saveState();
+      render();
+    }
+
+    function setExampleData() {
+      state = JSON.parse(JSON.stringify(exampleData));
+      persistAndRender();
+    }
+
+    function addItem() {
+      const title = document.getElementById('newTitle').value.trim();
+      const category = document.getElementById('newCategory').value.trim();
+      const impact = Number(document.getElementById('newImpact').value) || 0;
+      const effort = Number(document.getElementById('newEffort').value) || 0;
+      const urgency = Number(document.getElementById('newUrgency').value) || 0;
+      const risk = Number(document.getElementById('newRisk').value) || 0;
+      const strategic = Number(document.getElementById('newStrategic').value) || 0;
+      const owner = document.getElementById('newOwner').value.trim();
+      const note = document.getElementById('newNote').value.trim();
+
+      if (!title) {
+        alert('Bitte einen Titel eingeben.');
+        return;
+      }
+
+      state.items.push({
+        id: uid(),
+        title,
+        category,
+        impact,
+        effort,
+        urgency,
+        risk,
+        strategic,
+        owner,
+        note
+      });
+
+      document.getElementById('newTitle').value = '';
+      document.getElementById('newCategory').value = '';
+      document.getElementById('newImpact').value = '3';
+      document.getElementById('newEffort').value = '3';
+      document.getElementById('newUrgency').value = '3';
+      document.getElementById('newRisk').value = '3';
+      document.getElementById('newStrategic').value = '3';
+      document.getElementById('newOwner').value = '';
+      document.getElementById('newNote').value = '';
+
+      persistAndRender();
+    }
+
+    function deleteItem(id) {
+      state.items = state.items.filter(item => item.id !== id);
+      persistAndRender();
+    }
+
+    function updateItem(id, field, value) {
+      const item = state.items.find(entry => entry.id === id);
+      if (!item) return;
+
+      if (['impact', 'effort', 'urgency', 'risk', 'strategic'].includes(field)) {
+        item[field] = Number(value) || 0;
+      } else {
+        item[field] = value;
+      }
+
+      persistAndRender();
+    }
+
+    function calculateItem(item) {
+      const score =
+        (Number(item.impact) || 0) * 3 +
+        (Number(item.urgency) || 0) * 2 +
+        (Number(item.risk) || 0) * 2 +
+        (Number(item.strategic) || 0) * 2 -
+        (Number(item.effort) || 0);
+
+      let priority = 'Niedrig';
+      let className = 'priority-low';
+
+      if (score >= 25) {
+        priority = 'Hoch';
+        className = 'priority-high';
+      } else if (score >= 16) {
+        priority = 'Mittel';
+        className = 'priority-medium';
+      }
+
+      return {
+        ...item,
+        score,
+        priority,
+        className
+      };
+    }
+
+    function calculateAll() {
+      return state.items
+        .map(calculateItem)
+        .sort((a, b) => b.score - a.score || b.impact - a.impact || a.effort - b.effort);
+    }
+
+    function renderSummaryOnly(items) {
+      const countItems = items.length;
+      const countHigh = items.filter(item => item.priority === 'Hoch').length;
+      const countMedium = items.filter(item => item.priority === 'Mittel').length;
+      const countLow = items.filter(item => item.priority === 'Niedrig').length;
+      const topItem = items[0]?.title || '-';
+
+      document.getElementById('countItems').textContent = countItems;
+      document.getElementById('countHigh').textContent = countHigh;
+      document.getElementById('countMedium').textContent = countMedium;
+      document.getElementById('countLow').textContent = countLow;
+      document.getElementById('topItem').textContent = topItem;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderMatrix(items) {
+      const container = document.getElementById('priorityMatrix');
+      let html = '';
+
+      html += '<div class="matrix-header"></div>';
+      for (let x = 1; x <= 5; x++) {
+        html += `<div class="matrix-header">Aufwand ${x}</div>`;
+      }
+
+      for (let y = 5; y >= 1; y--) {
+        html += `<div class="matrix-side">Impact ${y}</div>`;
+        for (let x = 1; x <= 5; x++) {
+          const cellItems = items.filter(item => item.impact === y && item.effort === x);
+          let cellClass = 'low';
+
+          const maxScore = cellItems.length ? Math.max(...cellItems.map(item => item.score)) : 0;
+          if (maxScore >= 25) {
+            cellClass = 'high';
+          } else if (maxScore >= 16) {
+            cellClass = 'medium';
+          }
+
+          html += `<div class="matrix-cell ${cellClass}">`;
+          if (cellItems.length) {
+            html += cellItems
+              .map(item => `<span class="matrix-chip">${escapeHtml(item.title)} (${item.score})</span>`)
+              .join('');
+          }
+          html += `</div>`;
+        }
+      }
+
+      container.innerHTML = html;
+    }
+
+    function render() {
+      const items = calculateAll();
+      renderSummaryOnly(items);
+      renderMatrix(items);
+
+      const table = document.getElementById('analysisTable');
+      let html = '';
+
+      html += '<thead>';
+      html += '<tr>';
+      html += '<th class="text-left">Titel</th>';
+      html += '<th class="text-left">Kategorie</th>';
+      html += '<th>Impact</th>';
+      html += '<th>Aufwand</th>';
+      html += '<th>Dringlichkeit</th>';
+      html += '<th>Risiko</th>';
+      html += '<th>Strategisch</th>';
+      html += '<th>Score</th>';
+      html += '<th>Priorität</th>';
+      html += '<th class="text-left">Verantwortlich</th>';
+      html += '<th class="text-left">Notiz</th>';
+      html += '<th>Aktion</th>';
+      html += '</tr>';
+      html += '</thead>';
+
+      html += '<tbody>';
+
+      items.forEach(item => {
+        html += `
+          <tr>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.title)}"
+                oninput="updateItem('${item.id}', 'title', this.value)"
+              />
+            </td>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.category || '')}"
+                oninput="updateItem('${item.id}', 'category', this.value)"
+              />
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'impact', this.value)">
+                <option value="1" ${item.impact === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.impact === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.impact === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.impact === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.impact === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'effort', this.value)">
+                <option value="1" ${item.effort === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.effort === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.effort === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.effort === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.effort === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'urgency', this.value)">
+                <option value="1" ${item.urgency === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.urgency === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.urgency === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.urgency === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.urgency === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'risk', this.value)">
+                <option value="1" ${item.risk === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.risk === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.risk === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.risk === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.risk === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'strategic', this.value)">
+                <option value="1" ${item.strategic === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.strategic === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.strategic === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.strategic === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.strategic === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td class="${item.className}">
+              <div class="strong-value">${item.score}</div>
+              <div class="sub-value">automatisch berechnet</div>
+            </td>
+            <td class="${item.className}">
+              <div class="strong-value">${escapeHtml(item.priority)}</div>
+              <div class="sub-value">${item.priority === 'Hoch' ? 'zuerst machen' : item.priority === 'Mittel' ? 'einplanen' : 'nachrangig'}</div>
+            </td>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.owner || '')}"
+                oninput="updateItem('${item.id}', 'owner', this.value)"
+              />
+            </td>
+            <td class="text-left">
+              <textarea
+                class="text-input"
+                oninput="updateItem('${item.id}', 'note', this.value)"
+              >${escapeHtml(item.note || '')}</textarea>
+            </td>
+            <td>
+              <button class="small-btn btn-danger" onclick="deleteItem('${item.id}')">Löschen</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      if (!items.length) {
+        html += `<tr><td class="empty" colspan="12">Noch keine Einträge vorhanden.</td></tr>`;
+      }
+
+      html += '</tbody>';
+      table.innerHTML = html;
+    }
+
+    function exportTxt() {
+      const items = calculateAll();
+
+      const content = [
+        'Priorisierungstool mit Score',
+        '',
+        ...(
+          items.length
+            ? items.map((item, index) => [
+                `${index + 1}. ${item.title}`,
+                `Kategorie: ${item.category || '-'}`,
+                `Impact: ${item.impact}`,
+                `Aufwand: ${item.effort}`,
+                `Dringlichkeit: ${item.urgency}`,
+                `Risiko: ${item.risk}`,
+                `Strategische Relevanz: ${item.strategic}`,
+                `Score: ${item.score}`,
+                `Priorität: ${item.priority}`,
+                `Verantwortlich: ${item.owner || '-'}`,
+                `Notiz: ${item.note || '-'}`,
+                ''
+              ].join('\n'))
+            : ['Keine Einträge']
+        )
+      ].join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'priorisierung-score.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', addItem);
+    document.getElementById('loadExampleBtn').addEventListener('click', setExampleData);
+    document.getElementById('saveLocalBtn').addEventListener('click', saveState);
+    document.getElementById('loadLocalBtn').addEventListener('click', () => {
+      if (!loadState()) {
+        alert('Kein gespeicherter Stand gefunden.');
+        return;
+      }
+      render();
+    });
+    document.getElementById('exportTxtBtn').addEventListener('click', exportTxt);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = { items: [] };
+      persistAndRender();
+    });
+
+    document.getElementById('newTitle').addEventListener('keydown', event => {
+      if (event.key === 'Enter') addItem();
+    });
+
+    if (!loadState()) {
+      setExampleData();
+    } else {
+      render();
+    }
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

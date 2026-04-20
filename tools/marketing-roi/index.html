@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketing-ROI Rechner</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1400px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .results { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .results { padding: 24px; }
+    .results h2 { margin: 0 0 20px; font-size: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 10px; }
+    .stat-card .value { font-size: 32px; font-weight: 700; }
+    .stat-card .unit { font-size: 14px; color: var(--text-soft); margin-top: 4px; }
+    .positive { color: var(--success); }
+    .negative { color: var(--danger); }
+    .neutral { color: var(--warning); }
+    .campaigns-list { margin-top: 20px; }
+    .campaign-item {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: var(--surface-soft); margin-bottom: 12px; display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: center;
+    }
+    .campaign-name { font-weight: 700; }
+    .campaign-metric { text-align: right; }
+    .campaign-metric .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .campaign-metric .value { font-size: 16px; font-weight: 700; }
+    .delete-btn { background: var(--danger); color: #fff; min-height: 32px; padding: 6px 12px; font-size: 12px; }
+    .formula-box {
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-top: 20px;
+    }
+    .formula-box h3 { margin: 0 0 10px; font-size: 14px; }
+    .formula-box p { margin: 0; font-size: 13px; color: var(--text-soft); line-height: 1.6; }
+    .benchmark-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 20px;
+    }
+    .benchmark-box h3 { margin: 0 0 12px; font-size: 14px; }
+    .benchmark-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .benchmark-row:last-child { border-bottom: none; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .campaign-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Marketing-ROI Rechner</h1>
+      <p>Return on Investment für Marketing-Kampagnen berechnen – Kosten, Umsatz und Profitabilität analysieren.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Kampagne hinzufügen</h2>
+          <div class="field">
+            <label for="campaignName">Kampagnen-Name</label>
+            <input id="campaignName" placeholder="z.B. Google Ads Q1" />
+          </div>
+          <div class="field">
+            <label for="campaignCost">Marketing-Kosten (€)</label>
+            <input id="campaignCost" type="number" placeholder="5000" />
+          </div>
+          <div class="field">
+            <label for="campaignRevenue">Generierter Umsatz (€)</label>
+            <input id="campaignRevenue" type="number" placeholder="15000" />
+          </div>
+          <button class="btn-primary" id="addBtn">Kampagne hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="exampleBtn">Beispieldaten laden</button>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="resetBtn">Alle löschen</button>
+        </div>
+      </aside>
+
+      <main class="results">
+        <h2>Ergebnisse</h2>
+        <div class="summary-grid">
+          <div class="stat-card">
+            <div class="label">Gesamtkosten</div>
+            <div class="value" id="totalCost">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Gesamtumsatz</div>
+            <div class="value" id="totalRevenue">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Netto-Gewinn</div>
+            <div class="value" id="netProfit">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">ROI</div>
+            <div class="value" id="roiValue">0%</div>
+            <div class="unit" id="roiStatus">-</div>
+          </div>
+        </div>
+
+        <div class="campaigns-list">
+          <h3>Kampagnen-Übersicht</h3>
+          <div id="campaignsList">
+            <p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Kampagnen hinzugefügt</p>
+          </div>
+        </div>
+
+        <div class="formula-box">
+          <h3>Berechnungsformel</h3>
+          <p><strong>ROI = (Umsatz - Kosten) / Kosten × 100%</strong></p>
+          <p style="margin-top:8px;">Ein ROI von 200% bedeutet: Für jeden investierten Euro wurden 2 Euro Gewinn erzielt (plus der Euro zurück).</p>
+        </div>
+
+        <div class="benchmark-box">
+          <h3>ROI-Benchmarks nach Kanal</h3>
+          <div class="benchmark-row"><span>Email Marketing</span><span>3600% - 4200%</span></div>
+          <div class="benchmark-row"><span>SEO</span><span>800% - 1200%</span></div>
+          <div class="benchmark-row"><span>Google Ads</span><span>200% - 500%</span></div>
+          <div class="benchmark-row"><span>Social Media Ads</span><span>150% - 400%</span></div>
+          <div class="benchmark-row"><span>Content Marketing</span><span>300% - 600%</span></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let campaigns = [];
+
+    function addCampaign() {
+      const name = document.getElementById('campaignName').value.trim();
+      const cost = parseFloat(document.getElementById('campaignCost').value) || 0;
+      const revenue = parseFloat(document.getElementById('campaignRevenue').value) || 0;
+
+      if (!name || cost <= 0) { alert('Bitte Name und Kosten eingeben'); return; }
+
+      const profit = revenue - cost;
+      const roi = cost > 0 ? ((profit / cost) * 100).toFixed(1) : 0;
+
+      campaigns.push({ id: Date.now(), name, cost, revenue, profit, roi });
+      render();
+
+      document.getElementById('campaignName').value = '';
+      document.getElementById('campaignCost').value = '';
+      document.getElementById('campaignRevenue').value = '';
+    }
+
+    function deleteCampaign(id) {
+      campaigns = campaigns.filter(c => c.id !== id);
+      render();
+    }
+
+    function render() {
+      let totalCost = 0, totalRevenue = 0;
+      campaigns.forEach(c => { totalCost += c.cost; totalRevenue += c.revenue; });
+      const netProfit = totalRevenue - totalCost;
+      const totalROI = totalCost > 0 ? ((netProfit / totalCost) * 100).toFixed(1) : 0;
+
+      document.getElementById('totalCost').textContent = totalCost.toLocaleString('de-DE', {style:'currency',currency:'EUR'});
+      document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('de-DE', {style:'currency',currency:'EUR'});
+      document.getElementById('netProfit').textContent = netProfit.toLocaleString('de-DE', {style:'currency',currency:'EUR'});
+      document.getElementById('netProfit').className = netProfit >= 0 ? 'value positive' : 'value negative';
+
+      const roiEl = document.getElementById('roiValue');
+      roiEl.textContent = totalROI + '%';
+      roiEl.className = totalROI >= 0 ? 'value positive' : 'value negative';
+
+      const statusEl = document.getElementById('roiStatus');
+      if (totalROI >= 300) statusEl.textContent = '🟢 Sehr gut';
+      else if (totalROI >= 100) statusEl.textContent = '🟡 Gut';
+      else if (totalROI >= 0) statusEl.textContent = '🟠 Durchschnitt';
+      else statusEl.textContent = '🔴 Verlust';
+
+      const list = document.getElementById('campaignsList');
+      if (!campaigns.length) {
+        list.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Kampagnen hinzugefügt</p>';
+        return;
+      }
+
+      list.innerHTML = campaigns.map(c => `
+        <div class="campaign-item">
+          <div class="campaign-name">${c.name}</div>
+          <div class="campaign-metric">
+            <div class="label">Kosten</div>
+            <div class="value">${c.cost.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="campaign-metric">
+            <div class="label">Umsatz</div>
+            <div class="value">${c.revenue.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="campaign-metric">
+            <div class="label">Gewinn</div>
+            <div class="value ${c.profit >= 0 ? 'positive' : 'negative'}">${c.profit.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="campaign-metric">
+            <div class="label">ROI</div>
+            <div class="value ${c.roi >= 0 ? 'positive' : 'negative'}">${c.roi}%</div>
+          </div>
+          <div class="campaign-metric">
+            <div class="label">ROAS</div>
+            <div class="value">${c.cost > 0 ? (c.revenue / c.cost).toFixed(2) : 0}x</div>
+          </div>
+          <button class="delete-btn" onclick="deleteCampaign(${c.id})">×</button>
+        </div>
+      `).join('');
+    }
+
+    function loadExample() {
+      campaigns = [
+        { id: 1, name: 'Google Ads - Brand', cost: 5000, revenue: 25000, profit: 20000, roi: 400 },
+        { id: 2, name: 'Facebook Ads - Retargeting', cost: 3000, revenue: 12000, profit: 9000, roi: 300 },
+        { id: 3, name: 'E-Mail Newsletter', cost: 500, revenue: 8000, profit: 7500, roi: 1500 },
+        { id: 4, name: 'Influencer Kampagne', cost: 8000, revenue: 15000, profit: 7000, roi: 87.5 }
+      ];
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addCampaign);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Alle Kampagnen löschen?')) { campaigns = []; render(); } });
+
+    loadExample();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

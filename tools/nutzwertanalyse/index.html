@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nutzwertanalyse</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-strong: #f1f5f9;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --danger: #c62828;
+      --danger-hover: #a61f1f;
+      --success: #13795b;
+      --success-hover: #0f6148;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --input-height: 44px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #ffffff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 780px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel,
+    .table-panel,
+    .summary,
+    .note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h2,
+    .summary h2,
+    .table-panel h2,
+    .note h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section + .section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field + .field {
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    input,
+    button {
+      font: inherit;
+    }
+
+    input {
+      width: 100%;
+      min-height: var(--input-height);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    button {
+      min-height: var(--input-height);
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-green {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: var(--success-hover);
+    }
+
+    .btn-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .summary {
+      padding: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .card .value {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 20px 0;
+    }
+
+    .table-head p {
+      margin: 6px 0 0;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 18px 20px 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 980px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      text-align: center;
+      vertical-align: top;
+      background: #fff;
+    }
+
+    tr:last-child td,
+    tr:last-child th {
+      border-bottom: 0;
+    }
+
+    tr th:last-child,
+    tr td:last-child {
+      border-right: 0;
+    }
+
+    th {
+      background: var(--surface-strong);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    td.sticky,
+    th.sticky {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #f8fafc;
+      text-align: left;
+      min-width: 220px;
+    }
+
+    th.sticky2,
+    td.sticky2 {
+      position: sticky;
+      left: 220px;
+      z-index: 3;
+      background: #f8fafc;
+      min-width: 130px;
+    }
+
+    .criterion-name,
+    .option-name,
+    .weight-input,
+    .score-input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .criterion-name,
+    .option-name {
+      text-align: left;
+    }
+
+    .weight-input,
+    .score-input {
+      text-align: center;
+    }
+
+    .score-input {
+      max-width: 84px;
+      margin: 0 auto 8px;
+    }
+
+    .score-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .score-value {
+      font-size: 12px;
+      color: var(--text-soft);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .option-head {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .result-cell {
+      font-weight: 700;
+      background: #f8fafc;
+    }
+
+    .rank-1 {
+      background: #e8f7ee !important;
+    }
+
+    .rank-2 {
+      background: #edf4ff !important;
+    }
+
+    .rank-3 {
+      background: #fff4e7 !important;
+    }
+
+    .result-total {
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .result-rank {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 18px 20px;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    .empty {
+      color: var(--text-soft);
+      padding: 18px;
+      text-align: center;
+      background: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 16px 12px 28px;
+      }
+
+      .hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      td.sticky,
+      th.sticky {
+        min-width: 180px;
+      }
+
+      th.sticky2,
+      td.sticky2 {
+        left: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Nutzwertanalyse</h1>
+      <p>
+        Kriterien anlegen, Gewichtungen festlegen, Optionen bewerten und die Gesamtnutzwerte automatisch vergleichen.
+        Die Berechnung erfolgt nach dem Prinzip Gewichtung × Punktzahl.
+      </p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Kriterium hinzufügen</h2>
+          <div class="field">
+            <label for="newCriterion">Bezeichnung</label>
+            <input id="newCriterion" type="text" placeholder="z. B. Kosten" />
+          </div>
+          <div class="field">
+            <label for="newWeight">Gewichtung</label>
+            <input id="newWeight" type="number" min="0" step="1" value="10" />
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addCriterionBtn">Kriterium hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Option hinzufügen</h2>
+          <div class="field">
+            <label for="newOption">Bezeichnung</label>
+            <input id="newOption" type="text" placeholder="z. B. Anbieter A" />
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addOptionBtn">Option hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-green" id="normalizeBtn">Gewichtungen auf 100 % normieren</button>
+            <button class="btn-secondary" id="saveLocalBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadLocalBtn">Gespeicherten Stand laden</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="label">Kriterien</div>
+              <div class="value" id="criteriaCount">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Optionen</div>
+              <div class="value" id="optionsCount">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Gewichtung gesamt</div>
+              <div class="value" id="weightSum">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Beste Option</div>
+              <div class="value" id="bestOption">-</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-panel">
+          <div class="table-head">
+            <div>
+              <h2>Bewertungsmatrix</h2>
+              <p>Punkteskala frei nutzbar. Empfehlung: 1 = sehr schlecht, 10 = sehr gut.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="analysisTable" aria-label="Tabelle der Nutzwertanalyse"></table>
+          </div>
+        </section>
+
+        <section class="note">
+          <h2>Hinweis</h2>
+          <p class="muted">
+            Die Gesamtsumme einer Option ergibt sich aus der Summe aller gewichteten Einzelbewertungen.
+            Kriterien und Optionen können direkt in der Tabelle umbenannt werden. Änderungen werden automatisch gespeichert.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'nutzwertanalyse_app_data_v1';
+
+    let state = {
+      criteria: [],
+      options: []
+    };
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    const defaultExample = {
+      criteria: [
+        { id: uid(), name: 'Kosten', weight: 30 },
+        { id: uid(), name: 'Qualität', weight: 25 },
+        { id: uid(), name: 'Bedienbarkeit', weight: 20 },
+        { id: uid(), name: 'Support', weight: 15 },
+        { id: uid(), name: 'Lieferzeit', weight: 10 }
+      ],
+      options: [
+        { id: uid(), name: 'Anbieter A', scores: {} },
+        { id: uid(), name: 'Anbieter B', scores: {} },
+        { id: uid(), name: 'Anbieter C', scores: {} }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed.criteria || !parsed.options) return false;
+        state = parsed;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function setExampleData() {
+      state = JSON.parse(JSON.stringify(defaultExample));
+      for (const option of state.options) {
+        for (const criterion of state.criteria) {
+          option.scores[criterion.id] = Math.floor(Math.random() * 5) + 6;
+        }
+      }
+      persistAndRender();
+    }
+
+    function persistAndRender() {
+      saveState();
+      render();
+    }
+
+    function addCriterion() {
+      const nameInput = document.getElementById('newCriterion');
+      const weightInput = document.getElementById('newWeight');
+      const name = nameInput.value.trim();
+      const weight = Number(weightInput.value);
+
+      if (!name) {
+        alert('Bitte einen Namen für das Kriterium eingeben.');
+        return;
+      }
+
+      const id = uid();
+      state.criteria.push({ id, name, weight: Number.isFinite(weight) ? weight : 0 });
+      state.options.forEach(option => {
+        option.scores[id] = 0;
+      });
+
+      nameInput.value = '';
+      weightInput.value = '10';
+      persistAndRender();
+    }
+
+    function addOption() {
+      const nameInput = document.getElementById('newOption');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        alert('Bitte einen Namen für die Option eingeben.');
+        return;
+      }
+
+      const scores = {};
+      state.criteria.forEach(criterion => {
+        scores[criterion.id] = 0;
+      });
+
+      state.options.push({ id: uid(), name, scores });
+      nameInput.value = '';
+      persistAndRender();
+    }
+
+    function deleteCriterion(id) {
+      state.criteria = state.criteria.filter(c => c.id !== id);
+      state.options.forEach(option => {
+        delete option.scores[id];
+      });
+      persistAndRender();
+    }
+
+    function deleteOption(id) {
+      state.options = state.options.filter(o => o.id !== id);
+      persistAndRender();
+    }
+
+    function updateCriterionName(id, value) {
+      const criterion = state.criteria.find(c => c.id === id);
+      if (!criterion) return;
+      criterion.name = value;
+      persistAndRender();
+    }
+
+    function updateCriterionWeight(id, value) {
+      const criterion = state.criteria.find(c => c.id === id);
+      if (!criterion) return;
+      criterion.weight = Number(value) || 0;
+      persistAndRender();
+    }
+
+    function updateOptionName(id, value) {
+      const option = state.options.find(o => o.id === id);
+      if (!option) return;
+      option.name = value;
+      persistAndRender();
+    }
+
+    function updateScore(optionId, criterionId, value) {
+      const option = state.options.find(o => o.id === optionId);
+      if (!option) return;
+      option.scores[criterionId] = Number(value) || 0;
+      persistAndRender();
+    }
+
+    function calculateResults() {
+      const results = state.options.map(option => {
+        let total = 0;
+        state.criteria.forEach(criterion => {
+          const score = Number(option.scores[criterion.id]) || 0;
+          total += score * (Number(criterion.weight) || 0);
+        });
+        return {
+          optionId: option.id,
+          name: option.name,
+          total
+        };
+      });
+
+      results.sort((a, b) => b.total - a.total);
+      return results;
+    }
+
+    function normalizeWeights() {
+      const sum = state.criteria.reduce((acc, c) => acc + (Number(c.weight) || 0), 0);
+      if (!sum) {
+        alert('Die Summe der Gewichtungen ist 0.');
+        return;
+      }
+
+      let running = 0;
+      state.criteria.forEach((criterion, index) => {
+        if (index < state.criteria.length - 1) {
+          const normalized = Math.round(((Number(criterion.weight) || 0) / sum) * 100);
+          criterion.weight = normalized;
+          running += normalized;
+        } else {
+          criterion.weight = 100 - running;
+        }
+      });
+
+      persistAndRender();
+    }
+
+    function renderSummaryOnly() {
+      const weightTotal = state.criteria.reduce((acc, c) => acc + (Number(c.weight) || 0), 0);
+      const results = calculateResults();
+      document.getElementById('criteriaCount').textContent = state.criteria.length;
+      document.getElementById('optionsCount').textContent = state.options.length;
+      document.getElementById('weightSum').textContent = weightTotal;
+      document.getElementById('bestOption').textContent = results[0]?.name || '-';
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function render() {
+      renderSummaryOnly();
+
+      const table = document.getElementById('analysisTable');
+      const results = calculateResults();
+      const rankMap = {};
+      results.forEach((result, index) => {
+        rankMap[result.optionId] = index + 1;
+      });
+
+      let html = '';
+
+      html += '<thead>';
+      html += '<tr>';
+      html += '<th class="sticky">Kriterium</th>';
+      html += '<th class="sticky2">Gewichtung</th>';
+      state.options.forEach(option => {
+        html += `
+          <th>
+            <div class="option-head">
+              <div>${escapeHtml(option.name)}</div>
+              <button class="small-btn btn-danger" onclick="deleteOption('${option.id}')">Option löschen</button>
+            </div>
+          </th>
+        `;
+      });
+      html += '<th>Aktion</th>';
+      html += '</tr>';
+      html += '</thead>';
+
+      html += '<tbody>';
+
+      state.criteria.forEach(criterion => {
+        html += '<tr>';
+        html += `
+          <td class="sticky">
+            <input
+              class="criterion-name"
+              type="text"
+              value="${escapeHtml(criterion.name)}"
+              oninput="updateCriterionName('${criterion.id}', this.value)"
+            />
+          </td>
+        `;
+        html += `
+          <td class="sticky2">
+            <input
+              class="weight-input"
+              type="number"
+              min="0"
+              step="1"
+              value="${Number(criterion.weight) || 0}"
+              oninput="updateCriterionWeight('${criterion.id}', this.value)"
+            />
+          </td>
+        `;
+
+        state.options.forEach(option => {
+          const score = Number(option.scores[criterion.id]) || 0;
+          html += `
+            <td>
+              <div class="score-box">
+                <input
+                  class="score-input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value="${score}"
+                  oninput="updateScore('${option.id}', '${criterion.id}', this.value)"
+                />
+                <div class="score-value">Wert: ${score * (Number(criterion.weight) || 0)}</div>
+              </div>
+            </td>
+          `;
+        });
+
+        html += `
+          <td>
+            <button class="small-btn btn-danger" onclick="deleteCriterion('${criterion.id}')">Löschen</button>
+          </td>
+        `;
+        html += '</tr>';
+      });
+
+      if (!state.criteria.length) {
+        html += `<tr><td class="empty" colspan="${state.options.length + 3}">Noch keine Kriterien vorhanden.</td></tr>`;
+      }
+
+      html += '</tbody>';
+
+      html += '<tfoot>';
+      html += '<tr>';
+      html += '<th class="sticky">Gesamtnutzwert</th>';
+      html += '<th class="sticky2">Ranking</th>';
+
+      state.options.forEach(option => {
+        const result = results.find(r => r.optionId === option.id);
+        const rank = rankMap[option.id] || '-';
+        let rankClass = '';
+        if (rank === 1) rankClass = 'rank-1';
+        if (rank === 2) rankClass = 'rank-2';
+        if (rank === 3) rankClass = 'rank-3';
+
+        html += `
+          <td class="result-cell ${rankClass}">
+            <div class="result-total">${result ? result.total : 0}</div>
+            <div class="result-rank">Platz ${rank}</div>
+            <input
+              class="option-name"
+              type="text"
+              value="${escapeHtml(option.name)}"
+              oninput="updateOptionName('${option.id}', this.value)"
+            />
+          </td>
+        `;
+      });
+
+      html += '<th>Ergebnis</th>';
+      html += '</tr>';
+      html += '</tfoot>';
+
+      table.innerHTML = html;
+    }
+
+    document.getElementById('addCriterionBtn').addEventListener('click', addCriterion);
+    document.getElementById('addOptionBtn').addEventListener('click', addOption);
+    document.getElementById('loadExampleBtn').addEventListener('click', setExampleData);
+    document.getElementById('normalizeBtn').addEventListener('click', normalizeWeights);
+    document.getElementById('saveLocalBtn').addEventListener('click', saveState);
+    document.getElementById('loadLocalBtn').addEventListener('click', () => {
+      if (!loadState()) {
+        alert('Kein gespeicherter Stand gefunden.');
+        return;
+      }
+      render();
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = { criteria: [], options: [] };
+      persistAndRender();
+    });
+
+    document.getElementById('newCriterion').addEventListener('keydown', event => {
+      if (event.key === 'Enter') addCriterion();
+    });
+
+    document.getElementById('newOption').addEventListener('keydown', event => {
+      if (event.key === 'Enter') addOption();
+    });
+
+    if (!loadState()) {
+      setExampleData();
+    } else {
+      render();
+    }
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

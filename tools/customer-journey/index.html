@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Journey Map</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .journey-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 80px; resize: vertical; }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #a61f1f; }
+    .btn-stack { display: grid; gap: 10px; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .journey-board { padding: 20px; }
+    .journey-board h2 { margin: 0 0 14px; font-size: 18px; }
+    .phases-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+    .phase-card {
+      border: 1px solid var(--border); border-radius: 16px; background: var(--surface-soft);
+      display: flex; flex-direction: column; min-height: 400px;
+    }
+    .phase-header {
+      padding: 14px 16px; background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff; border-radius: 16px 16px 0 0;
+    }
+    .phase-header h3 { margin: 0 0 4px; font-size: 16px; }
+    .phase-header p { margin: 0; font-size: 12px; opacity: 0.8; }
+    .phase-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .touchpoint-item {
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .touchpoint-item textarea {
+      min-height: 60px; border-radius: 8px; font-size: 13px;
+    }
+    .touchpoint-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .touchpoint-header span { font-size: 12px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; }
+    .emotion-slider { margin: 8px 0; }
+    .emotion-slider input { width: 100%; }
+    .emotion-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-soft); }
+    .item-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .small-btn { min-height: 32px; padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+    .empty { color: var(--text-soft); padding: 20px; text-align: center; border: 1px dashed var(--border-strong); border-radius: 12px; }
+    .summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .summary h2 { margin: 0 0 14px; font-size: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .stat-card { border: 1px solid var(--border); border-radius: 16px; padding: 16px; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    @media (max-width: 1200px) { .phases-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .phases-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) { .phases-grid, .summary-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Customer Journey Map</h1>
+      <p>Kundenreise visualisieren – Touchpoints, Emotionen und Pain Points in 5 Phasen erfassen.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Touchpoint hinzufügen</h2>
+          <div class="field">
+            <label for="phase">Phase</label>
+            <select id="phase">
+              <option value="awareness">Awareness (Bewusstsein)</option>
+              <option value="consideration">Consideration (Überlegung)</option>
+              <option value="purchase">Purchase (Kauf)</option>
+              <option value="retention">Retention (Bindung)</option>
+              <option value="advocacy">Advocacy (Empfehlung)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="touchpoint">Touchpoint / Interaktion</label>
+            <input id="touchpoint" placeholder="z.B. Google Suche, Website-Besuch, E-Mail..." />
+          </div>
+          <div class="field">
+            <label for="emotion">Emotion (1-10)</label>
+            <input id="emotion" type="number" min="1" max="10" value="5" />
+          </div>
+          <div class="field">
+            <label for="painpoint">Pain Point / Problem</label>
+            <textarea id="painpoint" placeholder="Was frustriert den Kunden hier?"></textarea>
+          </div>
+          <div class="field">
+            <label for="opportunity">Opportunity / Lösung</label>
+            <textarea id="opportunity" placeholder="Wie können wir das verbessern?"></textarea>
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadBtn">Gespeicherten Stand laden</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="stat-card">
+              <div class="label">Touchpoints gesamt</div>
+              <div class="value" id="totalTouchpoints">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Durchschn. Emotion</div>
+              <div class="value" id="avgEmotion">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Pain Points</div>
+              <div class="value" id="totalPainpoints">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Opportunities</div>
+              <div class="value" id="totalOpportunities">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="journey-board">
+          <h2>Journey Phasen</h2>
+          <div class="phases-grid">
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>Awareness</h3>
+                <p>Bewusstsein</p>
+              </div>
+              <div class="phase-body" id="awarenessList">
+                <div class="empty">Noch keine Touchpoints</div>
+              </div>
+            </div>
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>Consideration</h3>
+                <p>Überlegung</p>
+              </div>
+              <div class="phase-body" id="considerationList">
+                <div class="empty">Noch keine Touchpoints</div>
+              </div>
+            </div>
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>Purchase</h3>
+                <p>Kauf</p>
+              </div>
+              <div class="phase-body" id="purchaseList">
+                <div class="empty">Noch keine Touchpoints</div>
+              </div>
+            </div>
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>Retention</h3>
+                <p>Bindung</p>
+              </div>
+              <div class="phase-body" id="retentionList">
+                <div class="empty">Noch keine Touchpoints</div>
+              </div>
+            </div>
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>Advocacy</h3>
+                <p>Empfehlung</p>
+              </div>
+              <div class="phase-body" id="advocacyList">
+                <div class="empty">Noch keine Touchpoints</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'cjm_data_v1';
+    let state = { awareness: [], consideration: [], purchase: [], retention: [], advocacy: [] };
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function getEmotionColor(value) {
+      if (value <= 3) return '#c62828';
+      if (value <= 5) return '#b26a00';
+      if (value <= 7) return '#225ea8';
+      return '#13795b';
+    }
+
+    function getEmotionLabel(value) {
+      if (value <= 2) return '😡 Sehr negativ';
+      if (value <= 4) return '🙁 Negativ';
+      if (value <= 6) return '😐 Neutral';
+      if (value <= 8) return '🙂 Positiv';
+      return '😍 Sehr positiv';
+    }
+
+    function addTouchpoint() {
+      const phase = document.getElementById('phase').value;
+      const touchpoint = document.getElementById('touchpoint').value.trim();
+      const emotion = parseInt(document.getElementById('emotion').value) || 5;
+      const painpoint = document.getElementById('painpoint').value.trim();
+      const opportunity = document.getElementById('opportunity').value.trim();
+
+      if (!touchpoint) { alert('Bitte einen Touchpoint eingeben'); return; }
+
+      state[phase].push({ id: uid(), touchpoint, emotion, painpoint, opportunity });
+      saveState();
+      render();
+
+      document.getElementById('touchpoint').value = '';
+      document.getElementById('painpoint').value = '';
+      document.getElementById('opportunity').value = '';
+      document.getElementById('emotion').value = 5;
+    }
+
+    function deleteTouchpoint(phase, id) {
+      state[phase] = state[phase].filter(t => t.id !== id);
+      saveState();
+      render();
+    }
+
+    function updateTouchpoint(phase, id, field, value) {
+      const t = state[phase].find(x => x.id === id);
+      if (t) { t[field] = value; saveState(); renderSummary(); }
+    }
+
+    function renderPhase(phase, containerId) {
+      const container = document.getElementById(containerId);
+      const items = state[phase];
+      if (!items.length) { container.innerHTML = '<div class="empty">Noch keine Touchpoints</div>'; return; }
+
+      container.innerHTML = items.map(item => `
+        <div class="touchpoint-item">
+          <div class="touchpoint-header">
+            <span>Touchpoint</span>
+            <span style="color:${getEmotionColor(item.emotion)};font-weight:700;">${getEmotionLabel(item.emotion)}</span>
+          </div>
+          <textarea onchange="updateTouchpoint('${phase}', '${item.id}', 'touchpoint', this.value)">${item.touchpoint}</textarea>
+          <div class="emotion-slider">
+            <input type="range" min="1" max="10" value="${item.emotion}" 
+              onchange="updateTouchpoint('${phase}', '${item.id}', 'emotion', parseInt(this.value))">
+          </div>
+          <div class="touchpoint-header"><span>Pain Point</span></div>
+          <textarea onchange="updateTouchpoint('${phase}', '${item.id}', 'painpoint', this.value)">${item.painpoint || ''}</textarea>
+          <div class="touchpoint-header"><span>Opportunity</span></div>
+          <textarea onchange="updateTouchpoint('${phase}', '${item.id}', 'opportunity', this.value)">${item.opportunity || ''}</textarea>
+          <div class="item-actions">
+            <button class="small-btn btn-danger" onclick="deleteTouchpoint('${phase}', '${item.id}')">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSummary() {
+      let total = 0, emotions = 0, painpoints = 0, opportunities = 0;
+      Object.values(state).forEach(phase => {
+        phase.forEach(t => {
+          total++;
+          emotions += t.emotion;
+          if (t.painpoint) painpoints++;
+          if (t.opportunity) opportunities++;
+        });
+      });
+      document.getElementById('totalTouchpoints').textContent = total;
+      document.getElementById('avgEmotion').textContent = total ? (emotions / total).toFixed(1) : '-';
+      document.getElementById('totalPainpoints').textContent = painpoints;
+      document.getElementById('totalOpportunities').textContent = opportunities;
+    }
+
+    function render() {
+      renderPhase('awareness', 'awarenessList');
+      renderPhase('consideration', 'considerationList');
+      renderPhase('purchase', 'purchaseList');
+      renderPhase('retention', 'retentionList');
+      renderPhase('advocacy', 'advocacyList');
+      renderSummary();
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { try { state = JSON.parse(raw); return true; } catch {} }
+      return false;
+    }
+
+    function loadExample() {
+      state = {
+        awareness: [
+          { id: uid(), touchpoint: 'Google Suche nach "Laptop günstig"', emotion: 6, painpoint: 'Zu viele Ergebnisse', opportunity: 'SEO verbessern' },
+          { id: uid(), touchpoint: 'Social Media Ad gesehen', emotion: 5, painpoint: 'Werbung wird ignoriert', opportunity: 'Personalisierung' }
+        ],
+        consideration: [
+          { id: uid(), touchpoint: 'Website besucht', emotion: 7, painpoint: 'Ladezeit zu lang', opportunity: 'Performance optimieren' },
+          { id: uid(), touchpoint: 'Produktvergleich angesehen', emotion: 6, painpoint: 'Fehlende Details', opportunity: 'Mehr Infos' }
+        ],
+        purchase: [
+          { id: uid(), touchpoint: 'In den Warenkorb', emotion: 8, painpoint: 'Versandkosten zu spät sichtbar', opportunity: 'Früher anzeigen' }
+        ],
+        retention: [
+          { id: uid(), touchpoint: 'Bestellbestätigung E-Mail', emotion: 9, painpoint: '', opportunity: 'Cross-Selling' }
+        ],
+        advocacy: [
+          { id: uid(), touchpoint: 'Produktbewertung geschrieben', emotion: 8, painpoint: 'Formular zu lang', opportunity: 'Vereinfachen' }
+        ]
+      };
+      saveState();
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addTouchpoint);
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten gefunden'); });
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Wirklich zurücksetzen?')) { state = { awareness: [], consideration: [], purchase: [], retention: [], advocacy: [] }; saveState(); render(); } });
+    document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+
+    if (!loadState()) loadExample();
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

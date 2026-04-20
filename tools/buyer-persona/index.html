@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyer Persona Tool</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .persona-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 80px; resize: vertical; }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #a61f1f; }
+    .btn-stack { display: grid; gap: 10px; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .persona-selector { margin-bottom: 20px; }
+    .persona-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .persona-tab { padding: 8px 16px; border-radius: 8px; background: var(--surface-soft); border: 1px solid var(--border); cursor: pointer; }
+    .persona-tab.active { background: var(--primary); color: #fff; }
+    .persona-board { padding: 24px; }
+    .persona-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .persona-card {
+      border: 1px solid var(--border); border-radius: 16px; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+      overflow: hidden;
+    }
+    .persona-header {
+      padding: 20px; background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff; display: flex; align-items: center; gap: 16px;
+    }
+    .persona-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    .persona-title h3 { margin: 0 0 4px; font-size: 22px; }
+    .persona-title p { margin: 0; opacity: 0.8; font-size: 14px; }
+    .persona-body { padding: 20px; }
+    .info-section { margin-bottom: 20px; }
+    .info-section h4 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-soft); }
+    .info-section input, .info-section textarea { width: 100%; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .tag {
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 20px;
+      padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px;
+    }
+    .tag button { background: none; border: none; padding: 0; min-height: auto; color: var(--danger); font-size: 16px; cursor: pointer; }
+    .tag-input { display: flex; gap: 8px; margin-top: 8px; }
+    .tag-input input { flex: 1; }
+    .tag-input button { min-height: 36px; padding: 6px 12px; }
+    .persona-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .small-btn { min-height: 36px; padding: 8px 12px; font-size: 13px; }
+    @media (max-width: 1200px) { .persona-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .persona-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Buyer Persona Tool</h1>
+      <p>Ideale Kundenprofile erstellen – Demografie, Verhalten, Bedürfnisse und Pain Points erfassen.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Neue Persona</h2>
+          <div class="field">
+            <label for="personaName">Name</label>
+            <input id="personaName" placeholder="z.B. "Max der Marketing Manager"" />
+          </div>
+          <div class="field">
+            <label for="personaSubtitle">Kurzbeschreibung</label>
+            <input id="personaSubtitle" placeholder="z.B. 35 Jahre, B2B Software" />
+          </div>
+          <button class="btn-primary" id="addPersonaBtn">Persona erstellen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveBtn">Alle speichern</button>
+            <button class="btn-secondary" id="loadBtn">Laden</button>
+            <button class="btn-secondary" id="exportBtn">Exportieren</button>
+            <button class="btn-danger" id="resetBtn">Alle löschen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <div class="persona-selector">
+          <div class="persona-tabs" id="personaTabs"></div>
+        </div>
+        <div class="persona-board" id="personaBoard">
+          <div style="text-align:center;padding:60px;color:var(--text-soft);">
+            <p>Erstelle eine neue Persona oder lade Beispieldaten.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'buyer_persona_data_v1';
+    let personas = [];
+    let activePersonaId = null;
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    const defaultSections = {
+      demografie: ['Alter', 'Geschlecht', 'Standort', 'Einkommen', 'Bildung'],
+      beruf: ['Jobtitel', 'Branche', 'Unternehmensgröße', 'Verantwortung'],
+      verhalten: ['Kaufverhalten', 'Informationsquellen', 'Entscheidungsfaktoren'],
+      ziele: ['Primäres Ziel', 'Sekundäres Ziel', 'Erfolgskriterien'],
+      painpoints: ['Herausforderungen', 'Frustrationen', 'Ängste'],
+      einwände: ['Typische Einwände', 'Zweifel', 'Bedenken']
+    };
+
+    function createPersona(name, subtitle) {
+      return {
+        id: uid(),
+        name,
+        subtitle,
+        avatar: '👤',
+        demografie: {},
+        beruf: {},
+        verhalten: {},
+        ziele: [],
+        painpoints: [],
+        einwände: [],
+        notizen: ''
+      };
+    }
+
+    function addPersona() {
+      const name = document.getElementById('personaName').value.trim();
+      const subtitle = document.getElementById('personaSubtitle').value.trim();
+      if (!name) { alert('Bitte einen Namen eingeben'); return; }
+      
+      const persona = createPersona(name, subtitle);
+      personas.push(persona);
+      activePersonaId = persona.id;
+      saveState();
+      render();
+      
+      document.getElementById('personaName').value = '';
+      document.getElementById('personaSubtitle').value = '';
+    }
+
+    function deletePersona(id) {
+      if (!confirm('Persona wirklich löschen?')) return;
+      personas = personas.filter(p => p.id !== id);
+      if (activePersonaId === id) activePersonaId = personas[0]?.id || null;
+      saveState();
+      render();
+    }
+
+    function updatePersonaField(id, field, value) {
+      const p = personas.find(x => x.id === id);
+      if (p) { p[field] = value; saveState(); }
+    }
+
+    function addTag(id, type, value) {
+      const p = personas.find(x => x.id === id);
+      if (p && !p[type].includes(value)) { p[type].push(value); saveState(); renderPersonaDetail(); }
+    }
+
+    function removeTag(id, type, value) {
+      const p = personas.find(x => x.id === id);
+      if (p) { p[type] = p[type].filter(t => t !== value); saveState(); renderPersonaDetail(); }
+    }
+
+    function renderTabs() {
+      const container = document.getElementById('personaTabs');
+      if (!personas.length) { container.innerHTML = ''; return; }
+      container.innerHTML = personas.map(p => `
+        <div class="persona-tab ${p.id === activePersonaId ? 'active' : ''}" onclick="selectPersona('${p.id}')">
+          ${p.name}
+        </div>
+      `).join('');
+    }
+
+    function selectPersona(id) {
+      activePersonaId = id;
+      render();
+    }
+
+    function renderTags(id, type, label) {
+      const p = personas.find(x => x.id === id);
+      if (!p) return '';
+      return `
+        <div class="info-section">
+          <h4>${label}</h4>
+          <div class="tag-list" id="${type}List">
+            ${p[type].map(t => `<span class="tag">${t} <button onclick="removeTag('${id}', '${type}', '${t}')">×</button></span>`).join('')}
+          </div>
+          <div class="tag-input">
+            <input type="text" id="${type}Input" placeholder="Neu hinzufügen..." onkeypress="if(event.key==='Enter')addTagFromInput('${id}', '${type}')" />
+            <button class="btn-secondary small-btn" onclick="addTagFromInput('${id}', '${type}')">+</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function addTagFromInput(id, type) {
+      const input = document.getElementById(`${type}Input`);
+      const value = input.value.trim();
+      if (value) { addTag(id, type, value); input.value = ''; }
+    }
+
+    function renderPersonaDetail() {
+      const board = document.getElementById('personaBoard');
+      const p = personas.find(x => x.id === activePersonaId);
+      if (!p) {
+        board.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-soft);"><p>Erstelle eine neue Persona oder lade Beispieldaten.</p></div>`;
+        return;
+      }
+
+      board.innerHTML = `
+        <div class="persona-grid">
+          <div class="persona-card" style="grid-column: 1 / -1;">
+            <div class="persona-header">
+              <div class="persona-avatar">${p.avatar}</div>
+              <div class="persona-title">
+                <h3><input value="${p.name}" onchange="updatePersonaField('${p.id}', 'name', this.value)" style="background:transparent;border:none;color:#fff;font-size:22px;font-weight:700;padding:0;width:100%;"></h3>
+                <p><input value="${p.subtitle}" onchange="updatePersonaField('${p.id}', 'subtitle', this.value)" style="background:transparent;border:none;color:rgba(255,255,255,0.8);font-size:14px;padding:0;width:100%;"></p>
+              </div>
+              <div style="margin-left:auto;">
+                <button class="btn-danger small-btn" onclick="deletePersona('${p.id}')">Löschen</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="persona-card">
+            <div class="persona-body">
+              <div class="info-section">
+                <h4>Demografie</h4>
+                <div class="info-grid">
+                  <input placeholder="Alter" value="${p.demografie.alter || ''}" onchange="updateDemografie('${p.id}', 'alter', this.value)">
+                  <input placeholder="Geschlecht" value="${p.demografie.geschlecht || ''}" onchange="updateDemografie('${p.id}', 'geschlecht', this.value)">
+                  <input placeholder="Standort" value="${p.demografie.standort || ''}" onchange="updateDemografie('${p.id}', 'standort', this.value)">
+                  <input placeholder="Einkommen" value="${p.demografie.einkommen || ''}" onchange="updateDemografie('${p.id}', 'einkommen', this.value)">
+                </div>
+              </div>
+              <div class="info-section">
+                <h4>Beruf</h4>
+                <div class="info-grid">
+                  <input placeholder="Jobtitel" value="${p.beruf.jobtitel || ''}" onchange="updateBeruf('${p.id}', 'jobtitel', this.value)">
+                  <input placeholder="Branche" value="${p.beruf.branche || ''}" onchange="updateBeruf('${p.id}', 'branche', this.value)">
+                  <input placeholder="Unternehmen" value="${p.beruf.unternehmen || ''}" onchange="updateBeruf('${p.id}', 'unternehmen', this.value)">
+                  <input placeholder="Verantwortung" value="${p.beruf.verantwortung || ''}" onchange="updateBeruf('${p.id}', 'verantwortung', this.value)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="persona-card">
+            <div class="persona-body">
+              ${renderTags(p.id, 'ziele', 'Ziele & Motivationen')}
+              ${renderTags(p.id, 'verhalten', 'Verhalten & Präferenzen')}
+            </div>
+          </div>
+
+          <div class="persona-card">
+            <div class="persona-body">
+              ${renderTags(p.id, 'painpoints', 'Pain Points & Herausforderungen')}
+              ${renderTags(p.id, 'einwände', 'Einwände & Bedenken')}
+            </div>
+          </div>
+
+          <div class="persona-card" style="grid-column: 1 / -1;">
+            <div class="persona-body">
+              <div class="info-section">
+                <h4>Notizen</h4>
+                <textarea style="min-height:120px;" placeholder="Zusätzliche Informationen..." onchange="updatePersonaField('${p.id}', 'notizen', this.value)">${p.notizen || ''}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateDemografie(id, field, value) {
+      const p = personas.find(x => x.id === id);
+      if (p) { p.demografie[field] = value; saveState(); }
+    }
+
+    function updateBeruf(id, field, value) {
+      const p = personas.find(x => x.id === id);
+      if (p) { p.beruf[field] = value; saveState(); }
+    }
+
+    function render() {
+      renderTabs();
+      renderPersonaDetail();
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ personas, activePersonaId })); }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          const data = JSON.parse(raw);
+          personas = data.personas || [];
+          activePersonaId = data.activePersonaId;
+          return true;
+        } catch {}
+      }
+      return false;
+    }
+
+    function loadExample() {
+      personas = [
+        { id: uid(), name: 'Max der Marketing Manager', subtitle: '35 Jahre, B2B Software, München', avatar: '👨‍💼', demografie: { alter: '35', geschlecht: 'Männlich', standort: 'München', einkommen: '70-90k' }, beruf: { jobtitel: 'Marketing Manager', branche: 'SaaS', unternehmen: 'Mittelstand', verantwortung: 'Lead Gen' }, ziele: ['Mehr Leads generieren', 'Marketing-ROI steigern', 'Team effizienter machen'], painpoints: ['Zu wenig Budget', 'Messung schwierig', 'Sales Alignment'], einwände: ['Zu teuer', 'Zu kompliziert'], notizen: 'Nutzt hauptsächlich LinkedIn und E-Mail' },
+        { id: uid(), name: 'Lisa die E-Commerce Managerin', subtitle: '28 Jahre, Fashion Retail, Berlin', avatar: '👩‍💻', demografie: { alter: '28', geschlecht: 'Weiblich', standort: 'Berlin', einkommen: '50-70k' }, beruf: { jobtitel: 'E-Commerce Manager', branche: 'Fashion', unternehmen: 'Online-Shop', verantwortung: 'Online-Umsatz' }, ziele: ['Conversion steigern', 'Warenkorbabbruch senken', 'Kundenbindung'], painpoints: ['Hohe Retourenquote', 'Ad-Kosten steigen', 'Plattform-Abhängigkeit'], einwände: ['Lange Implementierung', 'Datenschutz-Bedenken'], notizen: 'Entscheidet schnell, liebt Analytics' }
+      ];
+      activePersonaId = personas[0].id;
+      saveState();
+      render();
+    }
+
+    function exportData() {
+      const data = JSON.stringify(personas, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'buyer-personas.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('addPersonaBtn').addEventListener('click', addPersona);
+    document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten'); });
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Alle Personas löschen?')) { personas = []; activePersonaId = null; saveState(); render(); } });
+
+    if (!loadState()) loadExample();
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

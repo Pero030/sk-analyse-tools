@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prozessanalyse</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .process-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 60px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .process-board { padding: 24px; }
+    .process-board h2 { margin: 0 0 20px; font-size: 18px; }
+    .process-flow { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+    .process-step {
+      border: 1px solid var(--border); border-radius: 16px; background: var(--surface-soft);
+      min-width: 220px; max-width: 280px; position: relative;
+    }
+    .step-header {
+      padding: 16px 20px; background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff; border-radius: 16px 16px 0 0; display: flex; align-items: center; gap: 12px;
+    }
+    .step-number { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .step-title { font-weight: 700; }
+    .step-body { padding: 16px 20px; }
+    .step-metric { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .step-metric .label { color: var(--text-soft); }
+    .step-metric .value { font-weight: 700; }
+    .step-connector {
+      position: absolute; right: -20px; top: 50%; transform: translateY(-50%);
+      width: 20px; height: 2px; background: var(--border-strong);
+    }
+    .step-connector::after {
+      content: ''; position: absolute; right: 0; top: -4px;
+      width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid var(--border-strong);
+    }
+    .bottleneck-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 8px;
+    }
+    .bottleneck-high { background: var(--danger); color: #fff; }
+    .bottleneck-med { background: var(--warning); color: #fff; }
+    .bottleneck-low { background: var(--success); color: #fff; }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .stat-box .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 8px; }
+    .stat-box .value { font-size: 24px; font-weight: 700; }
+    .improvements { margin-top: 20px; }
+    .improvement-item {
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px;
+      background: #fff; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .improvement-priority { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Prozessanalyse</h1>
+      <p>Prozessschritte analysieren – Zeit, Kosten, Flaschenhälse und Optimierungspotenziale erfassen.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Prozessschritt hinzufügen</h2>
+          <div class="field">
+            <label for="stepName">Schritt-Name</label>
+            <input id="stepName" placeholder="z.B. Qualitätskontrolle" />
+          </div>
+          <div class="field">
+            <label for="stepTime">Dauer (Minuten)</label>
+            <input id="stepTime" type="number" placeholder="30" />
+          </div>
+          <div class="field">
+            <label for="stepCost">Kosten (€)</label>
+            <input id="stepCost" type="number" placeholder="15" />
+          </div>
+          <div class="field">
+            <label for="stepFTE">FTE / Personen</label>
+            <input id="stepFTE" type="number" placeholder="2" />
+          </div>
+          <div class="field">
+            <label for="stepBottleneck">Flaschenhals?</label>
+            <select id="stepBottleneck">
+              <option value="none">Nein</option>
+              <option value="low">Gering (leichte Verzögerung)</option>
+              <option value="medium">Mittel (regelmäßige Verzögerung)</option>
+              <option value="high">Hoch (kritischer Flaschenhals)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="stepImprovement">Verbesserungsidee</label>
+            <textarea id="stepImprovement" placeholder="Wie könnte dieser Schritt optimiert werden?"></textarea>
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div style="display:grid;gap:10px;">
+            <button class="btn-secondary" id="exampleBtn">Beispiel: Auftragsabwicklung</button>
+            <button class="btn-secondary" id="example2Btn">Beispiel: Marketing-Prozess</button>
+            <button class="btn-secondary" id="saveBtn">Speichern</button>
+            <button class="btn-secondary" id="loadBtn">Laden</button>
+            <button class="btn-danger" id="resetBtn">Zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <section class="process-board">
+          <h2>Prozess-Übersicht</h2>
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="label">Gesamtdauer</div>
+              <div class="value" id="totalTime">0 min</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Gesamtkosten</div>
+              <div class="value" id="totalCost">0 €</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Schritte</div>
+              <div class="value" id="stepCount">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Flaschenhälse</div>
+              <div class="value" id="bottleneckCount">0</div>
+            </div>
+          </div>
+
+          <div class="process-flow" id="processFlow">
+            <p style="color:var(--text-soft);width:100%;text-align:center;padding:40px;">Noch keine Prozessschritte hinzugefügt</p>
+          </div>
+        </section>
+
+        <section class="process-board improvements">
+          <h2>Verbesserungspotenziale</h2>
+          <div id="improvementsList">
+            <p style="color:var(--text-soft);text-align:center;padding:20px;">Noch keine Verbesserungsideen erfasst</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'process_analysis_v1';
+    let steps = [];
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function addStep() {
+      const name = document.getElementById('stepName').value.trim();
+      const time = parseInt(document.getElementById('stepTime').value) || 0;
+      const cost = parseFloat(document.getElementById('stepCost').value) || 0;
+      const fte = parseFloat(document.getElementById('stepFTE').value) || 1;
+      const bottleneck = document.getElementById('stepBottleneck').value;
+      const improvement = document.getElementById('stepImprovement').value.trim();
+
+      if (!name) { alert('Bitte einen Namen eingeben'); return; }
+
+      steps.push({
+        id: uid(), name, time, cost, fte, bottleneck, improvement,
+        order: steps.length + 1
+      });
+      saveState();
+      render();
+
+      document.getElementById('stepName').value = '';
+      document.getElementById('stepTime').value = '';
+      document.getElementById('stepCost').value = '';
+      document.getElementById('stepFTE').value = '';
+      document.getElementById('stepBottleneck').value = 'none';
+      document.getElementById('stepImprovement').value = '';
+    }
+
+    function deleteStep(id) {
+      steps = steps.filter(s => s.id !== id);
+      steps.forEach((s, i) => s.order = i + 1);
+      saveState();
+      render();
+    }
+
+    function moveStep(id, direction) {
+      const idx = steps.findIndex(s => s.id === id);
+      if (idx === -1) return;
+      if (direction === 'up' && idx > 0) {
+        [steps[idx], steps[idx-1]] = [steps[idx-1], steps[idx]];
+      } else if (direction === 'down' && idx < steps.length - 1) {
+        [steps[idx], steps[idx+1]] = [steps[idx+1], steps[idx]];
+      }
+      steps.forEach((s, i) => s.order = i + 1);
+      saveState();
+      render();
+    }
+
+    function formatTime(minutes) {
+      if (minutes < 60) return minutes + ' min';
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+    }
+
+    function render() {
+      const totalTime = steps.reduce((sum, s) => sum + s.time, 0);
+      const totalCost = steps.reduce((sum, s) => sum + s.cost, 0);
+      const bottleneckCount = steps.filter(s => s.bottleneck !== 'none').length;
+
+      document.getElementById('totalTime').textContent = formatTime(totalTime);
+      document.getElementById('totalCost').textContent = totalCost.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('stepCount').textContent = steps.length;
+      document.getElementById('bottleneckCount').textContent = bottleneckCount;
+
+      const flow = document.getElementById('processFlow');
+      if (!steps.length) {
+        flow.innerHTML = '<p style="color:var(--text-soft);width:100%;text-align:center;padding:40px;">Noch keine Prozessschritte hinzugefügt</p>';
+      } else {
+        flow.innerHTML = steps.map((s, idx) => {
+          const bottleneckClass = s.bottleneck === 'high' ? 'bottleneck-high' : s.bottleneck === 'medium' ? 'bottleneck-med' : s.bottleneck === 'low' ? 'bottleneck-low' : '';
+          const bottleneckText = s.bottleneck === 'high' ? '🔴 Kritischer Flaschenhals' : s.bottleneck === 'medium' ? '🟡 Flaschenhals' : s.bottleneck === 'low' ? '🟢 Leichte Verzögerung' : '';
+          
+          return `
+            <div class="process-step">
+              <div class="step-header">
+                <div class="step-number">${s.order}</div>
+                <div class="step-title">${s.name}</div>
+              </div>
+              <div class="step-body">
+                <div class="step-metric">
+                  <span class="label">Dauer</span>
+                  <span class="value">${formatTime(s.time)}</span>
+                </div>
+                <div class="step-metric">
+                  <span class="label">Kosten</span>
+                  <span class="value">${s.cost.toLocaleString('de-DE', {style:'currency',currency:'EUR'})}</span>
+                </div>
+                <div class="step-metric">
+                  <span class="label">FTE</span>
+                  <span class="value">${s.fte}</span>
+                </div>
+                ${bottleneckText ? `<span class="bottleneck-badge ${bottleneckClass}">${bottleneckText}</span>` : ''}
+                <div style="margin-top:12px;display:flex;gap:8px;">
+                  <button class="btn-secondary" style="min-height:32px;padding:6px 10px;font-size:12px;" onclick="moveStep('${s.id}', 'up')" ${idx === 0 ? 'disabled' : ''}>↑</button>
+                  <button class="btn-secondary" style="min-height:32px;padding:6px 10px;font-size:12px;" onclick="moveStep('${s.id}', 'down')" ${idx === steps.length - 1 ? 'disabled' : ''}>↓</button>
+                  <button class="btn-danger" style="min-height:32px;padding:6px 10px;font-size:12px;margin-left:auto;" onclick="deleteStep('${s.id}')">×</button>
+                </div>
+              </div>
+              ${idx < steps.length - 1 ? '<div class="step-connector"></div>' : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Improvements
+      const improvementsList = document.getElementById('improvementsList');
+      const improvements = steps.filter(s => s.improvement);
+      if (!improvements.length) {
+        improvementsList.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:20px;">Noch keine Verbesserungsideen erfasst</p>';
+      } else {
+        improvementsList.innerHTML = improvements.map(s => {
+          const priorityClass = s.bottleneck === 'high' ? 'improvement-high' : s.bottleneck === 'medium' ? 'improvement-med' : 'improvement-low';
+          const priorityText = s.bottleneck === 'high' ? '🔴 Hoch' : s.bottleneck === 'medium' ? '🟡 Mittel' : '🟢 Niedrig';
+          return `
+            <div class="improvement-item">
+              <div>
+                <strong>${s.name}:</strong> ${s.improvement}
+              </div>
+              <span class="improvement-priority ${priorityClass}" style="background:${s.bottleneck === 'high' ? 'var(--danger)' : s.bottleneck === 'medium' ? 'var(--warning)' : 'var(--success)'};color:#fff;">${priorityText}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(steps)); }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { try { steps = JSON.parse(raw); return true; } catch {} }
+      return false;
+    }
+
+    function loadExample(type) {
+      if (type === 'order') {
+        steps = [
+          { id: uid(), name: 'Auftragseingang', time: 15, cost: 5, fte: 1, bottleneck: 'none', improvement: '', order: 1 },
+          { id: uid(), name: 'Verfügbarkeitsprüfung', time: 30, cost: 8, fte: 1, bottleneck: 'medium', improvement: 'Automatisierung der Lagerabfrage', order: 2 },
+          { id: uid(), name: 'Zahlungsprüfung', time: 20, cost: 5, fte: 0.5, bottleneck: 'none', improvement: '', order: 3 },
+          { id: uid(), name: 'Kommissionierung', time: 45, cost: 15, fte: 2, bottleneck: 'high', improvement: 'Pick-by-Light System', order: 4 },
+          { id: uid(), name: 'Qualitätskontrolle', time: 20, cost: 10, fte: 1, bottleneck: 'low', improvement: 'Stichprobenprüfung statt 100%', order: 5 },
+          { id: uid(), name: 'Versand', time: 15, cost: 12, fte: 1, bottleneck: 'none', improvement: '', order: 6 }
+        ];
+      } else {
+        steps = [
+          { id: uid(), name: 'Kampagnenplanung', time: 240, cost: 200, fte: 2, bottleneck: 'none', improvement: '', order: 1 },
+          { id: uid(), name: 'Content-Erstellung', time: 480, cost: 400, fte: 3, bottleneck: 'high', improvement: 'Content-Templates erstellen', order: 2 },
+          { id: uid(), name: 'Design', time: 360, cost: 350, fte: 2, bottleneck: 'medium', improvement: 'Design-System einführen', order: 3 },
+          { id: uid(), name: 'Review & Freigabe', time: 120, cost: 150, fte: 1, bottleneck: 'high', improvement: 'Klare Freigabe-Prozesse', order: 4 },
+          { id: uid(), name: 'Publishing', time: 30, cost: 20, fte: 0.5, bottleneck: 'none', improvement: 'Scheduling-Tools nutzen', order: 5 }
+        ];
+      }
+      saveState();
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addStep);
+    document.getElementById('exampleBtn').addEventListener('click', () => loadExample('order'));
+    document.getElementById('example2Btn').addEventListener('click', () => loadExample('marketing'));
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten'); });
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Zurücksetzen?')) { steps = []; saveState(); render(); } });
+
+    if (!loadState()) loadExample('order');
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retourenanalyse</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1400px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .results { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .results { padding: 24px; }
+    .results h2 { margin: 0 0 20px; font-size: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 10px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .unit { font-size: 14px; color: var(--text-soft); margin-top: 4px; }
+    .critical { border-color: var(--danger); background: linear-gradient(180deg, #fff1f1 0%, #f8fafc 100%); }
+    .warning { border-color: var(--warning); background: linear-gradient(180deg, #fff4e7 0%, #f8fafc 100%); }
+    .good { border-color: var(--success); background: linear-gradient(180deg, #e8f7ee 0%, #f8fafc 100%); }
+    .products-list { margin-top: 20px; }
+    .product-item {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: var(--surface-soft); margin-bottom: 12px; display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: center;
+    }
+    .product-name { font-weight: 700; }
+    .product-metric { text-align: right; }
+    .product-metric .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .product-metric .value { font-size: 16px; font-weight: 700; }
+    .delete-btn { background: var(--danger); color: #fff; min-height: 32px; padding: 6px 12px; font-size: 12px; }
+    .reasons-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px;
+    }
+    .reasons-box h3 { margin: 0 0 16px; font-size: 16px; }
+    .reason-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .reason-row:last-child { border-bottom: none; }
+    .reason-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; margin: 0 16px; overflow: hidden; }
+    .reason-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .product-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Retourenanalyse</h1>
+      <p>Retourenquote analysieren – Produkte, Kosten und Ursachen erfassen für Optimierung.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Produkt hinzufügen</h2>
+          <div class="field">
+            <label for="productName">Produkt / Kategorie</label>
+            <input id="productName" placeholder="z.B. Sneaker XYZ" />
+          </div>
+          <div class="field">
+            <label for="unitsSold">Verkaufte Einheiten</label>
+            <input id="unitsSold" type="number" placeholder="1000" />
+          </div>
+          <div class="field">
+            <label for="unitsReturned">Retouren</label>
+            <input id="unitsReturned" type="number" placeholder="200" />
+          </div>
+          <div class="field">
+            <label for="avgOrderValue">Ø Bestellwert (€)</label>
+            <input id="avgOrderValue" type="number" placeholder="89" />
+          </div>
+          <div class="field">
+            <label for="returnCost">Retouren-Kosten/Einheit (€)</label>
+            <input id="returnCost" type="number" placeholder="15" />
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Retouren-Gründe</h2>
+          <div class="field">
+            <label for="reason">Grund hinzufügen</label>
+            <select id="reason">
+              <option value="Passform">Passform / Größe</option>
+              <option value="Qualität">Qualitätsmangel</option>
+              <option value="Beschreibung">Falsche Beschreibung</option>
+              <option value="Bilder">Bilder nicht aussagekräftig</option>
+              <option value="Defekt">Transportschaden</option>
+              <option value="Sonstige">Sonstige</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reasonCount">Anzahl</label>
+            <input id="reasonCount" type="number" placeholder="50" />
+          </div>
+          <button class="btn-secondary" id="addReasonBtn" style="width:100%;">Grund hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="exampleBtn">Beispieldaten laden</button>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="resetBtn">Alle löschen</button>
+        </div>
+      </aside>
+
+      <main class="results">
+        <h2>Übersicht</h2>
+        <div class="summary-grid">
+          <div class="stat-card" id="rateCard">
+            <div class="label">Gesamt-Retourenquote</div>
+            <div class="value" id="totalRate">0%</div>
+            <div class="unit" id="rateStatus">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Verkaufte Artikel</div>
+            <div class="value" id="totalSold">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Retouren</div>
+            <div class="value" id="totalReturned">0</div>
+          </div>
+          <div class="stat-card" id="costCard">
+            <div class="label">Retouren-Kosten</div>
+            <div class="value" id="totalCost">0 €</div>
+          </div>
+        </div>
+
+        <div class="reasons-box">
+          <h3>Retouren-Gründe</h3>
+          <div id="reasonsList">
+            <p style="color:var(--text-soft);text-align:center;">Noch keine Gründe erfasst</p>
+          </div>
+        </div>
+
+        <div class="products-list">
+          <h3>Produkt-Übersicht</h3>
+          <div id="productsList">
+            <p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Produkte hinzugefügt</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+    let reasons = {};
+
+    function addProduct() {
+      const name = document.getElementById('productName').value.trim();
+      const sold = parseInt(document.getElementById('unitsSold').value) || 0;
+      const returned = parseInt(document.getElementById('unitsReturned').value) || 0;
+      const aov = parseFloat(document.getElementById('avgOrderValue').value) || 0;
+      const cost = parseFloat(document.getElementById('returnCost').value) || 0;
+
+      if (!name || sold <= 0) { alert('Bitte Produkt und Verkaufszahlen eingeben'); return; }
+
+      const rate = (returned / sold * 100).toFixed(1);
+      const totalCost = returned * cost;
+      const lostRevenue = returned * aov * 0.3; // Annahme: 30% können wiederverkauft werden
+
+      products.push({ id: Date.now(), name, sold, returned, rate: parseFloat(rate), cost, totalCost, aov, lostRevenue });
+      render();
+
+      document.getElementById('productName').value = '';
+      document.getElementById('unitsSold').value = '';
+      document.getElementById('unitsReturned').value = '';
+    }
+
+    function deleteProduct(id) {
+      products = products.filter(p => p.id !== id);
+      render();
+    }
+
+    function addReason() {
+      const reason = document.getElementById('reason').value;
+      const count = parseInt(document.getElementById('reasonCount').value) || 0;
+      if (!count) { alert('Bitte Anzahl eingeben'); return; }
+      reasons[reason] = (reasons[reason] || 0) + count;
+      render();
+      document.getElementById('reasonCount').value = '';
+    }
+
+    function render() {
+      let totalSold = 0, totalReturned = 0, totalCost = 0, totalLost = 0;
+      products.forEach(p => { totalSold += p.sold; totalReturned += p.returned; totalCost += p.totalCost; totalLost += p.lostRevenue; });
+      const totalRate = totalSold > 0 ? (totalReturned / totalSold * 100).toFixed(1) : 0;
+
+      document.getElementById('totalRate').textContent = totalRate + '%';
+      document.getElementById('totalSold').textContent = totalSold;
+      document.getElementById('totalReturned').textContent = totalReturned;
+      document.getElementById('totalCost').textContent = totalCost.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+
+      const rateCard = document.getElementById('rateCard');
+      const rateStatus = document.getElementById('rateStatus');
+      if (totalRate < 10) { rateCard.className = 'stat-card good'; rateStatus.textContent = '🟢 Gut'; }
+      else if (totalRate < 20) { rateCard.className = 'stat-card warning'; rateStatus.textContent = '🟡 Beachten'; }
+      else { rateCard.className = 'stat-card critical'; rateStatus.textContent = '🔴 Kritisch'; }
+
+      const costCard = document.getElementById('costCard');
+      if (totalCost > totalSold * 5) costCard.className = 'stat-card critical';
+      else if (totalCost > totalSold * 2) costCard.className = 'stat-card warning';
+      else costCard.className = 'stat-card';
+
+      // Reasons
+      const reasonTotal = Object.values(reasons).reduce((a, b) => a + b, 0);
+      const reasonsList = document.getElementById('reasonsList');
+      if (reasonTotal === 0) {
+        reasonsList.innerHTML = '<p style="color:var(--text-soft);text-align:center;">Noch keine Gründe erfasst</p>';
+      } else {
+        const sortedReasons = Object.entries(reasons).sort((a, b) => b[1] - a[1]);
+        reasonsList.innerHTML = sortedReasons.map(([reason, count]) => {
+          const pct = (count / reasonTotal * 100).toFixed(1);
+          return `
+            <div class="reason-row">
+              <span style="width:120px;font-weight:700;">${reason}</span>
+              <div class="reason-bar"><div class="reason-bar-fill" style="width:${pct}%"></div></div>
+              <span style="width:80px;text-align:right;">${count} (${pct}%)</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Products
+      const list = document.getElementById('productsList');
+      if (!products.length) {
+        list.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Produkte hinzugefügt</p>';
+        return;
+      }
+
+      list.innerHTML = products.map(p => `
+        <div class="product-item">
+          <div class="product-name">${p.name}</div>
+          <div class="product-metric">
+            <div class="label">Verkauft</div>
+            <div class="value">${p.sold}</div>
+          </div>
+          <div class="product-metric">
+            <div class="label">Retouren</div>
+            <div class="value">${p.returned}</div>
+          </div>
+          <div class="product-metric">
+            <div class="label">Quote</div>
+            <div class="value ${p.rate < 10 ? 'good' : p.rate < 20 ? 'warning' : 'critical'}">${p.rate}%</div>
+          </div>
+          <div class="product-metric">
+            <div class="label">Kosten</div>
+            <div class="value">${p.totalCost.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="product-metric">
+            <div class="label">Verlust</div>
+            <div class="value">${p.lostRevenue.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <button class="delete-btn" onclick="deleteProduct(${p.id})">×</button>
+        </div>
+      `).join('');
+    }
+
+    function loadExample() {
+      products = [
+        { id: 1, name: 'Sneaker Modell A', sold: 1500, returned: 180, rate: 12.0, cost: 12, totalCost: 2160, aov: 89, lostRevenue: 4806 },
+        { id: 2, name: 'Sportschuhe B', sold: 800, returned: 240, rate: 30.0, cost: 15, totalCost: 3600, aov: 95, lostRevenue: 6840 },
+        { id: 3, name: 'Laufschuhe C', sold: 1200, returned: 96, rate: 8.0, cost: 12, totalCost: 1152, aov: 120, lostRevenue: 3456 },
+        { id: 4, name: 'Freizeitschuhe D', sold: 600, returned: 150, rate: 25.0, cost: 10, totalCost: 1500, aov: 75, lostRevenue: 3375 }
+      ];
+      reasons = { 'Passform': 350, 'Qualität': 120, 'Beschreibung': 80, 'Bilder': 60, 'Defekt': 40, 'Sonstige': 26 };
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addProduct);
+    document.getElementById('addReasonBtn').addEventListener('click', addReason);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Alle Daten löschen?')) { products = []; reasons = {}; render(); } });
+
+    loadExample();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

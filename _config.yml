@@ -1,0 +1,14 @@
+# GitHub Pages Konfiguration
+title: Analyse Tools
+description: Sammlung von Analyse-Tools für strategische Planung, Marketing, E-Commerce und mehr
+
+# Deaktiviert Jekyll Processing (wir nutzen reines HTML)
+# Die .nojekyll Datei tut dasselbe
+
+# Optional: Theme (falls du ein Jekyll Theme willst)
+# theme: jekyll-theme-cayman
+
+# Plugins (falls benötigt)
+# plugins:
+#   - jekyll-sitemap
+#   - jekyll-seo-tag

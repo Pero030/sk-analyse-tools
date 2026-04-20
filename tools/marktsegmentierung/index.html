@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marktsegmentierung</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .segment-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 60px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .segment-board { padding: 24px; }
+    .segment-board h2 { margin: 0 0 20px; font-size: 18px; }
+    .criteria-list { margin-bottom: 24px; }
+    .criteria-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 20px;
+      padding: 8px 16px; margin: 4px; font-size: 13px;
+    }
+    .criteria-tag button { background: none; border: none; padding: 0; color: var(--danger); cursor: pointer; font-size: 16px; }
+    .segments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .segment-card {
+      border: 1px solid var(--border); border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); overflow: hidden;
+    }
+    .segment-header {
+      padding: 20px; background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+    }
+    .segment-header h3 { margin: 0 0 4px; font-size: 20px; }
+    .segment-header p { margin: 0; opacity: 0.8; font-size: 13px; }
+    .segment-body { padding: 20px; }
+    .segment-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+    .segment-stat { text-align: center; padding: 12px; background: var(--surface-soft); border-radius: 10px; }
+    .segment-stat .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .segment-stat .value { font-size: 20px; font-weight: 700; }
+    .segment-criteria { margin-top: 16px; }
+    .segment-criteria h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; color: var(--text-soft); }
+    .criteria-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .criteria-badge { background: var(--border); padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .attractiveness-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 20px;
+    }
+    .attractiveness-box h3 { margin: 0 0 16px; font-size: 16px; }
+    .matrix-legend { display: flex; gap: 16px; margin-bottom: 16px; font-size: 13px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+    .segment-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .segment-actions button { flex: 1; min-height: 36px; font-size: 13px; }
+    .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .summary-card {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+    }
+    .summary-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 8px; }
+    .summary-card .value { font-size: 24px; font-weight: 700; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) { 
+      .summary-cards, .segment-stats { grid-template-columns: 1fr; }
+      .segments-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Marktsegmentierung</h1>
+      <p>Marktsegmente definieren und bewerten – Größe, Wachstum und Attraktivität erfassen.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Segment hinzufügen</h2>
+          <div class="field">
+            <label for="segmentName">Segment-Name</label>
+            <input id="segmentName" placeholder="z.B. Premium-Kunden" />
+          </div>
+          <div class="field">
+            <label for="segmentSize">Marktgröße (Mio €)</label>
+            <input id="segmentSize" type="number" placeholder="50" />
+          </div>
+          <div class="field">
+            <label for="segmentGrowth">Wachstum (% p.a.)</label>
+            <input id="segmentGrowth" type="number" placeholder="15" />
+          </div>
+          <div class="field">
+            <label for="segmentShare">Marktanteil Ziel (%)</label>
+            <input id="segmentShare" type="number" placeholder="20" />
+          </div>
+          <div class="field">
+            <label for="segmentCompetition">Wettbewerbsintensität</label>
+            <select id="segmentCompetition">
+              <option value="1">Niedrig</option>
+              <option value="2">Mittel</option>
+              <option value="3">Hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="segmentDescription">Beschreibung</label>
+            <textarea id="segmentDescription" placeholder="Charakteristik des Segments..."></textarea>
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Segmentierungskriterien</h2>
+          <div class="field">
+            <label for="criteriaInput">Kriterium hinzufügen</label>
+            <input id="criteriaInput" placeholder="z.B. Geografie, Demografie..." />
+          </div>
+          <button class="btn-secondary" id="addCriteriaBtn" style="width:100%;">Kriterium hinzufügen</button>
+          <div class="criteria-list" id="criteriaList" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div style="display:grid;gap:10px;">
+            <button class="btn-secondary" id="exampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveBtn">Speichern</button>
+            <button class="btn-secondary" id="loadBtn">Laden</button>
+            <button class="btn-danger" id="resetBtn">Zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="segment-board">
+        <h2>Marktübersicht</h2>
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="label">Segmente</div>
+            <div class="value" id="segmentCount">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Gesamtmarkt</div>
+            <div class="value" id="totalMarket">0 Mio €</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Ø Wachstum</div>
+            <div class="value" id="avgGrowth">0%</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Attraktivstes Segment</div>
+            <div class="value" id="bestSegment" style="font-size:16px;">-</div>
+          </div>
+        </div>
+
+        <h3>Segment-Matrix</h3>
+        <div class="matrix-legend">
+          <div class="legend-item"><div class="legend-color" style="background:var(--success);"></div> Hoch attraktiv</div>
+          <div class="legend-item"><div class="legend-color" style="background:var(--warning);"></div> Mittel</div>
+          <div class="legend-item"><div class="legend-color" style="background:var(--danger);"></div> Wenig attraktiv</div>
+        </div>
+
+        <div class="segments-grid" id="segmentsGrid">
+          <p style="color:var(--text-soft);grid-column:1/-1;text-align:center;padding:40px;">Noch keine Segmente erfasst</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'market_segmentation_v1';
+    let segments = [];
+    let criteria = ['Demografie', 'Geografie', 'Verhalten', 'Psychografie'];
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function addSegment() {
+      const name = document.getElementById('segmentName').value.trim();
+      const size = parseFloat(document.getElementById('segmentSize').value) || 0;
+      const growth = parseFloat(document.getElementById('segmentGrowth').value) || 0;
+      const share = parseFloat(document.getElementById('segmentShare').value) || 0;
+      const competition = parseInt(document.getElementById('segmentCompetition').value) || 2;
+      const description = document.getElementById('segmentDescription').value.trim();
+
+      if (!name || size <= 0) { alert('Bitte Name und Marktgröße eingeben'); return; }
+
+      // Attraktivitäts-Score: höher = besser (hohes Wachstum, großer Markt, niedriger Wettbewerb)
+      const attractiveness = (growth * 0.3) + (size * 0.01 * 10) + ((4 - competition) * 15);
+
+      segments.push({ id: uid(), name, size, growth, share, competition, description, attractiveness });
+      saveState();
+      render();
+
+      document.getElementById('segmentName').value = '';
+      document.getElementById('segmentSize').value = '';
+      document.getElementById('segmentGrowth').value = '';
+      document.getElementById('segmentShare').value = '';
+      document.getElementById('segmentDescription').value = '';
+    }
+
+    function deleteSegment(id) {
+      segments = segments.filter(s => s.id !== id);
+      saveState();
+      render();
+    }
+
+    function addCriteria() {
+      const c = document.getElementById('criteriaInput').value.trim();
+      if (!c) return;
+      criteria.push(c);
+      renderCriteria();
+      document.getElementById('criteriaInput').value = '';
+    }
+
+    function removeCriteria(c) {
+      criteria = criteria.filter(x => x !== c);
+      renderCriteria();
+    }
+
+    function renderCriteria() {
+      document.getElementById('criteriaList').innerHTML = criteria.map(c => 
+        `<span class="criteria-tag">${c} <button onclick="removeCriteria('${c}')">×</button></span>`
+      ).join('');
+    }
+
+    function getAttractivenessColor(score) {
+      if (score >= 60) return 'var(--success)';
+      if (score >= 40) return 'var(--warning)';
+      return 'var(--danger)';
+    }
+
+    function getAttractivenessLabel(score) {
+      if (score >= 60) return '🔴 Hoch';
+      if (score >= 40) return '🟡 Mittel';
+      return '🟢 Niedrig';
+    }
+
+    function render() {
+      const totalMarket = segments.reduce((sum, s) => sum + s.size, 0);
+      const avgGrowth = segments.length ? (segments.reduce((sum, s) => sum + s.growth, 0) / segments.length).toFixed(1) : 0;
+      const bestSegment = segments.length ? [...segments].sort((a, b) => b.attractiveness - a.attractiveness)[0] : null;
+
+      document.getElementById('segmentCount').textContent = segments.length;
+      document.getElementById('totalMarket').textContent = totalMarket.toFixed(1) + ' Mio €';
+      document.getElementById('avgGrowth').textContent = avgGrowth + '%';
+      document.getElementById('bestSegment').textContent = bestSegment ? bestSegment.name : '-';
+
+      const grid = document.getElementById('segmentsGrid');
+      if (!segments.length) {
+        grid.innerHTML = '<p style="color:var(--text-soft);grid-column:1/-1;text-align:center;padding:40px;">Noch keine Segmente erfasst</p>';
+      } else {
+        const sorted = [...segments].sort((a, b) => b.attractiveness - a.attractiveness);
+        grid.innerHTML = sorted.map(s => `
+          <div class="segment-card">
+            <div class="segment-header">
+              <h3>${s.name}</h3>
+              <p>${s.description || 'Keine Beschreibung'}</p>
+            </div>
+            <div class="segment-body">
+              <div class="segment-stats">
+                <div class="segment-stat">
+                  <div class="label">Marktgröße</div>
+                  <div class="value">${s.size} Mio €</div>
+                </div>
+                <div class="segment-stat">
+                  <div class="label">Wachstum</div>
+                  <div class="value" style="color:${s.growth >= 10 ? 'var(--success)' : s.growth >= 5 ? 'var(--warning)' : 'var(--danger)'}">${s.growth}%</div>
+                </div>
+                <div class="segment-stat">
+                  <div class="label">Ziel-Share</div>
+                  <div class="value">${s.share}%</div>
+                </div>
+                <div class="segment-stat">
+                  <div class="label">Attraktivität</div>
+                  <div class="value" style="color:${getAttractivenessColor(s.attractiveness)}">${s.attractiveness.toFixed(0)}</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface-soft);border-radius:8px;">
+                <span style="font-size:13px;color:var(--text-soft);">Wettbewerb:</span>
+                <span style="font-weight:700;color:${s.competition === 1 ? 'var(--success)' : s.competition === 2 ? 'var(--warning)' : 'var(--danger)'}">
+                  ${s.competition === 1 ? 'Niedrig' : s.competition === 2 ? 'Mittel' : 'Hoch'}
+                </span>
+              </div>
+              <div class="segment-actions">
+                <button class="btn-secondary" onclick="editSegment('${s.id}')">Bearbeiten</button>
+                <button class="btn-danger" onclick="deleteSegment('${s.id}')">Löschen</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      renderCriteria();
+    }
+
+    function editSegment(id) {
+      const s = segments.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('segmentName').value = s.name;
+      document.getElementById('segmentSize').value = s.size;
+      document.getElementById('segmentGrowth').value = s.growth;
+      document.getElementById('segmentShare').value = s.share;
+      document.getElementById('segmentCompetition').value = s.competition;
+      document.getElementById('segmentDescription').value = s.description || '';
+      deleteSegment(id);
+    }
+
+    function saveState() { 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ segments, criteria })); 
+    }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { 
+        try { 
+          const data = JSON.parse(raw); 
+          segments = data.segments || []; 
+          criteria = data.criteria || criteria;
+          return true; 
+        } catch {} 
+      }
+      return false;
+    }
+
+    function loadExample() {
+      segments = [
+        { id: uid(), name: 'Premium-Segment', size: 80, growth: 12, share: 25, competition: 3, description: 'Hohe Kaufkraft, Qualitätsbewusst', attractiveness: 58 },
+        { id: uid(), name: 'Mid-Market', size: 150, growth: 8, share: 20, competition: 2, description: 'Preis-Leistungs-Optimierer', attractiveness: 52 },
+        { id: uid(), name: 'Budget-Segment', size: 100, growth: 5, share: 15, competition: 3, description: 'Preissensibel, hohe Menge', attractiveness: 38 },
+        { id: uid(), name: 'Nische/Spezialist', size: 30, growth: 20, share: 40, competition: 1, description: 'Sehr spezifische Bedürfnisse', attractiveness: 75 },
+        { id: uid(), name: 'Enterprise', size: 120, growth: 15, share: 30, competition: 2, description: 'Große Unternehmen, hoher Wert', attractiveness: 68 }
+      ];
+      criteria = ['Unternehmensgröße', 'Branche', 'Geografie', 'Kaufverhalten', 'Budget'];
+      saveState();
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addSegment);
+    document.getElementById('addCriteriaBtn').addEventListener('click', addCriteria);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten'); });
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Zurücksetzen?')) { segments = []; criteria = ['Demografie', 'Geografie', 'Verhalten', 'Psychografie']; saveState(); render(); } });
+
+    if (!loadState()) loadExample();
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

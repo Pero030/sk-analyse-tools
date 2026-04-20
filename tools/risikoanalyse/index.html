@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risikoanalyse mit Score</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-strong: #f1f5f9;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --danger: #c62828;
+      --danger-hover: #a61f1f;
+      --success: #13795b;
+      --success-hover: #0f6148;
+      --warning: #b26a00;
+      --warning-hover: #945700;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --input-height: 44px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1550px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #ffffff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 980px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel,
+    .summary,
+    .table-panel,
+    .matrix-panel,
+    .note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h2,
+    .summary h2,
+    .table-panel h2,
+    .matrix-panel h2,
+    .note h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section + .section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field + .field {
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input,
+    select {
+      min-height: var(--input-height);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    button {
+      min-height: var(--input-height);
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background: var(--warning-hover);
+    }
+
+    .btn-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .summary {
+      padding: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .card .value {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .matrix-panel {
+      padding: 20px;
+    }
+
+    .risk-matrix-grid {
+      display: grid;
+      grid-template-columns: 120px repeat(5, 1fr);
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .matrix-header,
+    .matrix-side,
+    .matrix-cell {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      min-height: 90px;
+      background: #fff;
+    }
+
+    .matrix-header,
+    .matrix-side {
+      background: var(--surface-strong);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .matrix-side {
+      min-height: 120px;
+    }
+
+    .matrix-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    .matrix-cell.low {
+      background: #e8f7ee;
+    }
+
+    .matrix-cell.medium {
+      background: #fff4e7;
+    }
+
+    .matrix-cell.high {
+      background: #fff1f1;
+    }
+
+    .risk-chip {
+      display: inline-block;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.08);
+      font-weight: 700;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
+    .table-head {
+      padding: 20px 20px 0;
+    }
+
+    .table-head p {
+      margin: 6px 0 0;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 18px 20px 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 1500px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      text-align: center;
+      vertical-align: top;
+      background: #fff;
+    }
+
+    th {
+      background: var(--surface-strong);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    tr:last-child td,
+    tr:last-child th {
+      border-bottom: 0;
+    }
+
+    tr th:last-child,
+    tr td:last-child {
+      border-right: 0;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .small-input,
+    .text-input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .text-input {
+      text-align: left;
+    }
+
+    .small-input {
+      text-align: center;
+    }
+
+    .risk-low {
+      background: #e8f7ee !important;
+    }
+
+    .risk-medium {
+      background: #fff4e7 !important;
+    }
+
+    .risk-high {
+      background: #fff1f1 !important;
+    }
+
+    .strong-value {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .sub-value {
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 18px 20px;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    .empty {
+      color: var(--text-soft);
+      padding: 18px;
+      text-align: center;
+      background: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .risk-matrix-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .matrix-header,
+      .matrix-side {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 16px 12px 28px;
+      }
+
+      .hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Risikoanalyse mit Score</h1>
+      <p>
+        Risiken mit Eintrittswahrscheinlichkeit, Auswirkung und Status erfassen. Das Tool berechnet automatisch den Risiko-Score,
+        priorisiert die größten Risiken und zeigt sie in einer Risikomatrix an.
+      </p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Risiko hinzufügen</h2>
+          <div class="field">
+            <label for="newRisk">Risiko</label>
+            <input id="newRisk" type="text" placeholder="z. B. Lieferausfall wichtiger Marke" />
+          </div>
+          <div class="field">
+            <label for="newCategory">Kategorie</label>
+            <input id="newCategory" type="text" placeholder="z. B. Einkauf / Technik / Recht" />
+          </div>
+          <div class="field">
+            <label for="newProbability">Eintrittswahrscheinlichkeit (1–5)</label>
+            <select id="newProbability">
+              <option value="1">1 - sehr niedrig</option>
+              <option value="2">2 - niedrig</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newImpact">Auswirkung (1–5)</label>
+            <select id="newImpact">
+              <option value="1">1 - sehr gering</option>
+              <option value="2">2 - gering</option>
+              <option value="3" selected>3 - mittel</option>
+              <option value="4">4 - hoch</option>
+              <option value="5">5 - sehr hoch</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newOwner">Verantwortlich</label>
+            <input id="newOwner" type="text" placeholder="z. B. Einkaufsteam" />
+          </div>
+          <div class="field">
+            <label for="newMeasure">Maßnahme</label>
+            <textarea id="newMeasure" placeholder="z. B. Alternativlieferanten aufbauen"></textarea>
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addItemBtn">Risiko hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveLocalBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadLocalBtn">Gespeicherten Stand laden</button>
+            <button class="btn-warning" id="exportTxtBtn">Als TXT exportieren</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="label">Risiken gesamt</div>
+              <div class="value" id="countItems">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Hohe Risiken</div>
+              <div class="value" id="countHigh">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Mittlere Risiken</div>
+              <div class="value" id="countMedium">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Niedrige Risiken</div>
+              <div class="value" id="countLow">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Top-Risiko</div>
+              <div class="value" id="topRisk">-</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="matrix-panel">
+          <h2>Risikomatrix</h2>
+          <div class="risk-matrix-grid" id="riskMatrix"></div>
+        </section>
+
+        <section class="table-panel">
+          <div class="table-head">
+            <h2>Auswertung</h2>
+            <p>
+              Score = Wahrscheinlichkeit × Auswirkung. Ab 15 = hoch, ab 8 = mittel, darunter niedrig.
+              So siehst du sofort, welches Risiko zuerst bearbeitet werden muss.
+            </p>
+          </div>
+
+          <div class="table-wrap">
+            <table id="analysisTable" aria-label="Tabelle der Risikoanalyse"></table>
+          </div>
+        </section>
+
+        <section class="note">
+          <h2>Hinweis</h2>
+          <p class="muted">
+            Dieses Tool ist für Projekt-, Shop-, Compliance-, Technik- oder Betriebsrisiken geeignet.
+            Entscheidend ist, dass die Skala konsistent genutzt wird.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'risikoanalyse_score_app_data_v1';
+
+    let state = {
+      items: []
+    };
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    const exampleData = {
+      items: [
+        {
+          id: uid(),
+          risk: 'Ausfall eines wichtigen Lieferanten',
+          category: 'Einkauf',
+          probability: 4,
+          impact: 5,
+          owner: 'Einkauf',
+          measure: 'Alternativlieferanten prüfen'
+        },
+        {
+          id: uid(),
+          risk: 'Fehler im Checkout nach Release',
+          category: 'Technik',
+          probability: 3,
+          impact: 5,
+          owner: 'Tech',
+          measure: 'Staging-Test und Rollback-Plan'
+        },
+        {
+          id: uid(),
+          risk: 'Rechtliche Abmahnung wegen Kennzeichnung',
+          category: 'Compliance',
+          probability: 2,
+          impact: 5,
+          owner: 'Legal / Produktdaten',
+          measure: 'Pflichtangaben systematisch prüfen'
+        },
+        {
+          id: uid(),
+          risk: 'Temporärer Traffic-Rückgang durch SEO-Änderung',
+          category: 'Marketing',
+          probability: 3,
+          impact: 3,
+          owner: 'SEO',
+          measure: 'Monitoring und schrittweises Rollout'
+        }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.items)) return false;
+        state = parsed;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function persistAndRender() {
+      saveState();
+      render();
+    }
+
+    function setExampleData() {
+      state = JSON.parse(JSON.stringify(exampleData));
+      persistAndRender();
+    }
+
+    function addItem() {
+      const risk = document.getElementById('newRisk').value.trim();
+      const category = document.getElementById('newCategory').value.trim();
+      const probability = Number(document.getElementById('newProbability').value) || 0;
+      const impact = Number(document.getElementById('newImpact').value) || 0;
+      const owner = document.getElementById('newOwner').value.trim();
+      const measure = document.getElementById('newMeasure').value.trim();
+
+      if (!risk) {
+        alert('Bitte ein Risiko eingeben.');
+        return;
+      }
+
+      state.items.push({
+        id: uid(),
+        risk,
+        category,
+        probability,
+        impact,
+        owner,
+        measure
+      });
+
+      document.getElementById('newRisk').value = '';
+      document.getElementById('newCategory').value = '';
+      document.getElementById('newProbability').value = '3';
+      document.getElementById('newImpact').value = '3';
+      document.getElementById('newOwner').value = '';
+      document.getElementById('newMeasure').value = '';
+
+      persistAndRender();
+    }
+
+    function deleteItem(id) {
+      state.items = state.items.filter(item => item.id !== id);
+      persistAndRender();
+    }
+
+    function updateItem(id, field, value) {
+      const item = state.items.find(entry => entry.id === id);
+      if (!item) return;
+
+      if (field === 'probability' || field === 'impact') {
+        item[field] = Number(value) || 0;
+      } else {
+        item[field] = value;
+      }
+
+      persistAndRender();
+    }
+
+    function calculateItem(item) {
+      const probability = Number(item.probability) || 0;
+      const impact = Number(item.impact) || 0;
+      const score = probability * impact;
+
+      let level = 'Niedrig';
+      let className = 'risk-low';
+
+      if (score >= 15) {
+        level = 'Hoch';
+        className = 'risk-high';
+      } else if (score >= 8) {
+        level = 'Mittel';
+        className = 'risk-medium';
+      }
+
+      return {
+        ...item,
+        score,
+        level,
+        className
+      };
+    }
+
+    function calculateAll() {
+      return state.items
+        .map(calculateItem)
+        .sort((a, b) => b.score - a.score || b.impact - a.impact || b.probability - a.probability);
+    }
+
+    function renderSummaryOnly(items) {
+      const countItems = items.length;
+      const countHigh = items.filter(item => item.level === 'Hoch').length;
+      const countMedium = items.filter(item => item.level === 'Mittel').length;
+      const countLow = items.filter(item => item.level === 'Niedrig').length;
+      const topRisk = items[0]?.risk || '-';
+
+      document.getElementById('countItems').textContent = countItems;
+      document.getElementById('countHigh').textContent = countHigh;
+      document.getElementById('countMedium').textContent = countMedium;
+      document.getElementById('countLow').textContent = countLow;
+      document.getElementById('topRisk').textContent = topRisk;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderMatrix(items) {
+      const container = document.getElementById('riskMatrix');
+      let html = '';
+
+      html += '<div class="matrix-header"></div>';
+      for (let x = 1; x <= 5; x++) {
+        html += `<div class="matrix-header">Auswirkung ${x}</div>`;
+      }
+
+      for (let y = 5; y >= 1; y--) {
+        html += `<div class="matrix-side">Wahrscheinlichkeit ${y}</div>`;
+        for (let x = 1; x <= 5; x++) {
+          const score = x * y;
+          let cellClass = 'low';
+          if (score >= 15) {
+            cellClass = 'high';
+          } else if (score >= 8) {
+            cellClass = 'medium';
+          }
+
+          const cellItems = items.filter(item => item.impact === x && item.probability === y);
+          html += `<div class="matrix-cell ${cellClass}">`;
+          if (cellItems.length) {
+            html += cellItems.map(item => `<span class="risk-chip">${escapeHtml(item.risk)} (${item.score})</span>`).join('');
+          }
+          html += `</div>`;
+        }
+      }
+
+      container.innerHTML = html;
+    }
+
+    function render() {
+      const items = calculateAll();
+      renderSummaryOnly(items);
+      renderMatrix(items);
+
+      const table = document.getElementById('analysisTable');
+      let html = '';
+
+      html += '<thead>';
+      html += '<tr>';
+      html += '<th class="text-left">Risiko</th>';
+      html += '<th class="text-left">Kategorie</th>';
+      html += '<th>Wahrscheinlichkeit</th>';
+      html += '<th>Auswirkung</th>';
+      html += '<th>Score</th>';
+      html += '<th>Risikostufe</th>';
+      html += '<th class="text-left">Verantwortlich</th>';
+      html += '<th class="text-left">Maßnahme</th>';
+      html += '<th>Aktion</th>';
+      html += '</tr>';
+      html += '</thead>';
+
+      html += '<tbody>';
+
+      items.forEach(item => {
+        html += `
+          <tr>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.risk)}"
+                oninput="updateItem('${item.id}', 'risk', this.value)"
+              />
+            </td>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.category || '')}"
+                oninput="updateItem('${item.id}', 'category', this.value)"
+              />
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'probability', this.value)">
+                <option value="1" ${item.probability === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.probability === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.probability === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.probability === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.probability === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td>
+              <select class="small-input" oninput="updateItem('${item.id}', 'impact', this.value)">
+                <option value="1" ${item.impact === 1 ? 'selected' : ''}>1</option>
+                <option value="2" ${item.impact === 2 ? 'selected' : ''}>2</option>
+                <option value="3" ${item.impact === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${item.impact === 4 ? 'selected' : ''}>4</option>
+                <option value="5" ${item.impact === 5 ? 'selected' : ''}>5</option>
+              </select>
+            </td>
+            <td class="${item.className}">
+              <div class="strong-value">${item.score}</div>
+              <div class="sub-value">${item.probability} × ${item.impact}</div>
+            </td>
+            <td class="${item.className}">
+              <div class="strong-value">${escapeHtml(item.level)}</div>
+              <div class="sub-value">${item.level === 'Hoch' ? 'sofort handeln' : item.level === 'Mittel' ? 'beobachten / absichern' : 'niedrige Priorität'}</div>
+            </td>
+            <td class="text-left">
+              <input
+                class="text-input"
+                type="text"
+                value="${escapeHtml(item.owner || '')}"
+                oninput="updateItem('${item.id}', 'owner', this.value)"
+              />
+            </td>
+            <td class="text-left">
+              <textarea
+                class="text-input"
+                oninput="updateItem('${item.id}', 'measure', this.value)"
+              >${escapeHtml(item.measure || '')}</textarea>
+            </td>
+            <td>
+              <button class="small-btn btn-danger" onclick="deleteItem('${item.id}')">Löschen</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      if (!items.length) {
+        html += `<tr><td class="empty" colspan="9">Noch keine Risiken vorhanden.</td></tr>`;
+      }
+
+      html += '</tbody>';
+      table.innerHTML = html;
+    }
+
+    function exportTxt() {
+      const items = calculateAll();
+
+      const content = [
+        'Risikoanalyse mit Score',
+        '',
+        ...(
+          items.length
+            ? items.map((item, index) => [
+                `${index + 1}. ${item.risk}`,
+                `Kategorie: ${item.category || '-'}`,
+                `Wahrscheinlichkeit: ${item.probability}`,
+                `Auswirkung: ${item.impact}`,
+                `Score: ${item.score}`,
+                `Risikostufe: ${item.level}`,
+                `Verantwortlich: ${item.owner || '-'}`,
+                `Maßnahme: ${item.measure || '-'}`,
+                ''
+              ].join('\n'))
+            : ['Keine Einträge']
+        )
+      ].join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'risikoanalyse-score.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', addItem);
+    document.getElementById('loadExampleBtn').addEventListener('click', setExampleData);
+    document.getElementById('saveLocalBtn').addEventListener('click', saveState);
+    document.getElementById('loadLocalBtn').addEventListener('click', () => {
+      if (!loadState()) {
+        alert('Kein gespeicherter Stand gefunden.');
+        return;
+      }
+      render();
+    });
+    document.getElementById('exportTxtBtn').addEventListener('click', exportTxt);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = { items: [] };
+      persistAndRender();
+    });
+
+    document.getElementById('newRisk').addEventListener('keydown', event => {
+      if (event.key === 'Enter') addItem();
+    });
+
+    if (!loadState()) {
+      setExampleData();
+    } else {
+      render();
+    }
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

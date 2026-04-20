@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Lifetime Value Rechner</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1200px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .input-card, .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); padding: 24px; }
+    .input-card h2, .result-card h2 { margin: 0 0 20px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    .field-hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .result-card { grid-column: 1 / -1; }
+    .clv-display {
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 24px;
+    }
+    .clv-display .label { font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-bottom: 10px; }
+    .clv-display .value { font-size: 48px; font-weight: 700; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metric-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .metric-box .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 8px; }
+    .metric-box .value { font-size: 24px; font-weight: 700; }
+    .comparison { margin-top: 20px; padding: 20px; background: var(--surface-soft); border-radius: 12px; }
+    .comparison h3 { margin: 0 0 12px; font-size: 14px; }
+    .comparison-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .comparison-row:last-child { border-bottom: none; font-weight: 700; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .result-card { grid-column: auto; }
+      .metrics-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Customer Lifetime Value (CLV) Rechner</h1>
+      <p>Lebenszeitwert eines Kunden berechnen – Durchschnittlicher Umsatz, Häufigkeit und Kundenbeziehung berücksichtigen.</p>
+    </section>
+
+    <div class="layout">
+      <div class="input-card">
+        <h2>Basisdaten</h2>
+        <div class="field">
+          <label for="avgOrderValue">Durchschnittlicher Bestellwert (€)</label>
+          <input id="avgOrderValue" type="number" placeholder="85" />
+          <span class="field-hint">Ø Warenkorbwert pro Bestellung</span>
+        </div>
+        <div class="field">
+          <label for="purchaseFrequency">Kaufhäufigkeit pro Jahr</label>
+          <input id="purchaseFrequency" type="number" placeholder="4" />
+          <span class="field-hint">Wie oft kauft der Kunde durchschnittlich pro Jahr?</span>
+        </div>
+        <div class="field">
+          <label for="customerYears">Kundenbeziehung (Jahre)</label>
+          <input id="customerYears" type="number" placeholder="3" />
+          <span class="field-hint">Wie lange bleibt der Kunde im Durchschnitt?</span>
+        </div>
+        <div class="field">
+          <label for="grossMargin">Bruttomarge (%)</label>
+          <input id="grossMargin" type="number" placeholder="40" />
+          <span class="field-hint">Gewinnmarge nach Produktkosten</span>
+        </div>
+        <button class="btn-primary" id="calculateBtn">CLV berechnen</button>
+      </div>
+
+      <div class="input-card">
+        <h2>Alternative Berechnung</h2>
+        <div class="field">
+          <label for="monthlyRevenue">Monatlicher Umsatz pro Kunde (€)</label>
+          <input id="monthlyRevenue" type="number" placeholder="30" />
+        </div>
+        <div class="field">
+          <label for="churnRate">Churn-Rate (% pro Monat)</label>
+          <input id="churnRate" type="number" placeholder="5" />
+          <span class="field-hint">Wie viele Kunden verlassen den Shop monatlich?</span>
+        </div>
+        <div class="field">
+          <label for="discountRate">Diskontierungsrate (%)</label>
+          <input id="discountRate" type="number" placeholder="10" />
+          <span class="field-hint">Opportunitätskosten/Zins (optional)</span>
+        </div>
+        <button class="btn-primary" id="calculateAltBtn">Mit Churn-Rate berechnen</button>
+      </div>
+
+      <div class="result-card" id="resultCard" style="display:none;">
+        <h2>Ergebnisse</h2>
+        <div class="clv-display">
+          <div class="label">Customer Lifetime Value</div>
+          <div class="value" id="clvValue">0 €</div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="label">Jährlicher Kundenwert</div>
+            <div class="value" id="annualValue">0 €</div>
+          </div>
+          <div class="metric-box">
+            <div class="label">Gesamtumsatz (LT)</div>
+            <div class="value" id="totalRevenue">0 €</div>
+          </div>
+          <div class="metric-box">
+            <div class="label">Gross Margin</div>
+            <div class="value" id="grossProfit">0 €</div>
+          </div>
+        </div>
+        <div class="comparison">
+          <h3>Was bedeutet das für dein Marketing?</h3>
+          <div class="comparison-row"><span>Max. CAC (25% von CLV)</span><span id="maxCAC">0 €</span></div>
+          <div class="comparison-row"><span>Max. CAC (50% von CLV)</span><span id="maxCAC50">0 €</span></div>
+          <div class="comparison-row"><span>Payback Period (bei 25% CAC)</span><span id="payback">-</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calculateSimple() {
+      const aov = parseFloat(document.getElementById('avgOrderValue').value) || 0;
+      const freq = parseFloat(document.getElementById('purchaseFrequency').value) || 0;
+      const years = parseFloat(document.getElementById('customerYears').value) || 0;
+      const margin = parseFloat(document.getElementById('grossMargin').value) || 0;
+
+      if (!aov || !freq || !years) { alert('Bitte alle Werte eingeben'); return; }
+
+      const annualRevenue = aov * freq;
+      const totalRevenue = annualRevenue * years;
+      const clv = totalRevenue * (margin / 100);
+
+      showResults(clv, annualRevenue, totalRevenue, clv, years, freq);
+    }
+
+    function calculateWithChurn() {
+      const monthlyRevenue = parseFloat(document.getElementById('monthlyRevenue').value) || 0;
+      const churnRate = parseFloat(document.getElementById('churnRate').value) || 0;
+      const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+
+      if (!monthlyRevenue || !churnRate) { alert('Bitte Umsatz und Churn-Rate eingeben'); return; }
+
+      // CLV = M × (1 + d) / (d + c)
+      // M = monthly revenue, d = discount rate, c = churn rate
+      const m = monthlyRevenue;
+      const c = churnRate / 100;
+      const d = discountRate / 100;
+      
+      let clv;
+      if (d === 0) {
+        clv = m / c;
+      } else {
+        clv = m * (1 + d) / (d + c);
+      }
+
+      const avgCustomerMonths = 1 / c;
+      const annualRevenue = monthlyRevenue * 12;
+      const totalRevenue = monthlyRevenue * avgCustomerMonths;
+      const years = avgCustomerMonths / 12;
+
+      showResults(clv, annualRevenue, totalRevenue, clv, years, avgCustomerMonths);
+    }
+
+    function showResults(clv, annualRevenue, totalRevenue, grossProfit, years, frequency) {
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('clvValue').textContent = clv.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('annualValue').textContent = annualRevenue.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('grossProfit').textContent = grossProfit.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+
+      const maxCAC = clv * 0.25;
+      const maxCAC50 = clv * 0.50;
+      const payback = frequency > 0 ? Math.ceil((maxCAC / annualRevenue) * (years > 0 ? 12 / (frequency / years) : 12)) : 12;
+
+      document.getElementById('maxCAC').textContent = maxCAC.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('maxCAC50').textContent = maxCAC50.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('payback').textContent = `~${payback} Monate`;
+
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('calculateBtn').addEventListener('click', calculateSimple);
+    document.getElementById('calculateAltBtn').addEventListener('click', calculateWithChurn);
+
+    // Beispieldaten
+    document.getElementById('avgOrderValue').value = 85;
+    document.getElementById('purchaseFrequency').value = 4;
+    document.getElementById('customerYears').value = 3;
+    document.getElementById('grossMargin').value = 40;
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

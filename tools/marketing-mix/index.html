@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4P Marketing-Mix</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .mix-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 80px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .mix-board { padding: 24px; }
+    .mix-board h2 { margin: 0 0 20px; font-size: 20px; }
+    .p-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .p-card {
+      border: 1px solid var(--border); border-radius: 16px; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+      display: flex; flex-direction: column; min-height: 400px;
+    }
+    .p-header {
+      padding: 20px; border-radius: 16px 16px 0 0; display: flex; align-items: center; gap: 16px;
+    }
+    .p-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; background: rgba(255,255,255,0.3); }
+    .p-title h3 { margin: 0; font-size: 22px; color: #fff; }
+    .p-title p { margin: 4px 0 0; color: rgba(255,255,255,0.8); font-size: 13px; }
+    .product .p-header { background: linear-gradient(135deg, #13795b 0%, #0f6148 100%); }
+    .price .p-header { background: linear-gradient(135deg, #225ea8 0%, #1a4a84 100%); }
+    .place .p-header { background: linear-gradient(135deg, #b26a00 0%, #945700 100%); }
+    .promotion .p-header { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+    .p-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .mix-item {
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .mix-item textarea { min-height: 60px; border-radius: 8px; font-size: 13px; width: 100%; }
+    .mix-item input { min-height: 36px; font-size: 13px; }
+    .item-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .small-btn { min-height: 32px; padding: 6px 12px; font-size: 12px; }
+    .empty { color: var(--text-soft); padding: 40px; text-align: center; border: 1px dashed var(--border-strong); border-radius: 12px; }
+    .summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .summary h2 { margin: 0 0 14px; font-size: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .stat-card { border: 1px solid var(--border); border-radius: 16px; padding: 16px; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    @media (max-width: 1100px) { .p-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) { .summary-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>4P Marketing-Mix</h1>
+      <p>Produkt, Preis, Platz und Promotion analysieren – Das klassische Marketing-Instrumentarium.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Element hinzufügen</h2>
+          <div class="field">
+            <label for="pCategory">Kategorie (4P)</label>
+            <select id="pCategory">
+              <option value="product">Product (Produkt)</option>
+              <option value="price">Price (Preis)</option>
+              <option value="place">Place (Platz/Distribution)</option>
+              <option value="promotion">Promotion (Werbung)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="elementTitle">Titel</label>
+            <input id="elementTitle" placeholder="z.B. Premium-Qualität" />
+          </div>
+          <div class="field">
+            <label for="elementDesc">Beschreibung</label>
+            <textarea id="elementDesc" placeholder="Details zu diesem Element..."></textarea>
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div style="display:grid;gap:10px;">
+            <button class="btn-secondary" id="exampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveBtn">Speichern</button>
+            <button class="btn-secondary" id="loadBtn">Laden</button>
+            <button class="btn-danger" id="resetBtn">Zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="stat-card">
+              <div class="label">Product</div>
+              <div class="value" id="countProduct">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Price</div>
+              <div class="value" id="countPrice">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Place</div>
+              <div class="value" id="countPlace">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Promotion</div>
+              <div class="value" id="countPromotion">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mix-board">
+          <h2>Marketing-Mix Matrix</h2>
+          <div class="p-grid">
+            <div class="p-card product">
+              <div class="p-header">
+                <div class="p-icon">📦</div>
+                <div class="p-title">
+                  <h3>Product</h3>
+                  <p>Produktgestaltung & Qualität</p>
+                </div>
+              </div>
+              <div class="p-body" id="productList">
+                <div class="empty">Noch keine Elemente</div>
+              </div>
+            </div>
+
+            <div class="p-card price">
+              <div class="p-header">
+                <div class="p-icon">💰</div>
+                <div class="p-title">
+                  <h3>Price</h3>
+                  <p>Preisstrategie & Konditionen</p>
+                </div>
+              </div>
+              <div class="p-body" id="priceList">
+                <div class="empty">Noch keine Elemente</div>
+              </div>
+            </div>
+
+            <div class="p-card place">
+              <div class="p-header">
+                <div class="p-icon">📍</div>
+                <div class="p-title">
+                  <h3>Place</h3>
+                  <p>Vertrieb & Verfügbarkeit</p>
+                </div>
+              </div>
+              <div class="p-body" id="placeList">
+                <div class="empty">Noch keine Elemente</div>
+              </div>
+            </div>
+
+            <div class="p-card promotion">
+              <div class="p-header">
+                <div class="p-icon">📢</div>
+                <div class="p-title">
+                  <h3>Promotion</h3>
+                  <p>Kommunikation & Werbung</p>
+                </div>
+              </div>
+              <div class="p-body" id="promotionList">
+                <div class="empty">Noch keine Elemente</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'marketing_mix_4p_v1';
+    let state = { product: [], price: [], place: [], promotion: [] };
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function addElement() {
+      const category = document.getElementById('pCategory').value;
+      const title = document.getElementById('elementTitle').value.trim();
+      const desc = document.getElementById('elementDesc').value.trim();
+
+      if (!title) { alert('Bitte einen Titel eingeben'); return; }
+
+      state[category].push({ id: uid(), title, desc });
+      saveState();
+      render();
+
+      document.getElementById('elementTitle').value = '';
+      document.getElementById('elementDesc').value = '';
+    }
+
+    function deleteElement(category, id) {
+      state[category] = state[category].filter(e => e.id !== id);
+      saveState();
+      render();
+    }
+
+    function updateElement(category, id, field, value) {
+      const el = state[category].find(e => e.id === id);
+      if (el) { el[field] = value; saveState(); }
+    }
+
+    function renderCategory(category, containerId, emptyText) {
+      const container = document.getElementById(containerId);
+      const items = state[category];
+      if (!items.length) { container.innerHTML = `<div class="empty">${emptyText}</div>`; return; }
+
+      container.innerHTML = items.map(item => `
+        <div class="mix-item">
+          <input value="${item.title}" onchange="updateElement('${category}', '${item.id}', 'title', this.value)" style="font-weight:700;border:none;background:transparent;padding:0;margin-bottom:8px;">
+          <textarea onchange="updateElement('${category}', '${item.id}', 'desc', this.value)">${item.desc || ''}</textarea>
+          <div class="item-actions">
+            <button class="small-btn btn-danger" onclick="deleteElement('${category}', '${item.id}')">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSummary() {
+      document.getElementById('countProduct').textContent = state.product.length;
+      document.getElementById('countPrice').textContent = state.price.length;
+      document.getElementById('countPlace').textContent = state.place.length;
+      document.getElementById('countPromotion').textContent = state.promotion.length;
+    }
+
+    function render() {
+      renderCategory('product', 'productList', 'Produkteigenschaften definieren');
+      renderCategory('price', 'priceList', 'Preiskriterien festlegen');
+      renderCategory('place', 'placeList', 'Vertriebskanäle planen');
+      renderCategory('promotion', 'promotionList', 'Werbemaßnahmen erfassen');
+      renderSummary();
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { try { state = JSON.parse(raw); return true; } catch {} }
+      return false;
+    }
+
+    function loadExample() {
+      state = {
+        product: [
+          { id: uid(), title: 'Premium-Qualität', desc: 'Hochwertige Materialien, Made in Germany' },
+          { id: uid(), title: 'Nachhaltigkeit', desc: 'CO2-neutral produziert, recycelbare Verpackung' },
+          { id: uid(), title: 'Garantie', desc: '3 Jahre Herstellergarantie' }
+        ],
+        price: [
+          { id: uid(), title: 'Premium-Preis', desc: 'Höher als Wettbewerb, Qualitätsimage' },
+          { id: uid(), title: 'Frühbucherrabatt', desc: '-15% bei Vorbestellung' },
+          { id: uid(), title: 'Abomodell', desc: 'Monatliche Zahlung möglich' }
+        ],
+        place: [
+          { id: uid(), title: 'Online-Shop', desc: 'Eigenes Shopify-Store' },
+          { id: uid(), title: 'Amazon FBA', desc: 'Prime-Versand über Amazon' },
+          { id: uid(), title: 'Fachhandel', desc: 'Selektive Distribution in Fachmärkten' }
+        ],
+        promotion: [
+          { id: uid(), title: 'Content Marketing', desc: 'Blog, YouTube, Instagram' },
+          { id: uid(), title: 'Influencer', desc: 'Kooperation mit Tech-YouTubern' },
+          { id: uid(), title: 'SEA', desc: 'Google Ads, Brand Bidding' }
+        ]
+      };
+      saveState();
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addElement);
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten'); });
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Zurücksetzen?')) { state = { product: [], price: [], place: [], promotion: [] }; saveState(); render(); } });
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+
+    if (!loadState()) loadExample();
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

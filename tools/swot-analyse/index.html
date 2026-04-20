@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWOT-Analyse</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-strong: #f1f5f9;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --danger: #c62828;
+      --danger-hover: #a61f1f;
+      --success: #13795b;
+      --success-hover: #0f6148;
+      --warning: #b26a00;
+      --warning-hover: #945700;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --input-height: 44px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #ffffff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 860px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel,
+    .summary,
+    .swot-board,
+    .note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h2,
+    .summary h2,
+    .swot-board h2,
+    .note h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section + .section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field + .field {
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input,
+    select {
+      min-height: var(--input-height);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    button {
+      min-height: var(--input-height);
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-green {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: var(--success-hover);
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background: var(--warning-hover);
+    }
+
+    .btn-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .summary {
+      padding: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .card .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .swot-board {
+      padding: 20px;
+    }
+
+    .swot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .swot-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+      overflow: hidden;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .swot-card-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .swot-card-head h3 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .swot-card-head p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    .swot-card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      background: var(--surface-soft);
+    }
+
+    .swot-strength .swot-card-head {
+      background: #e8f7ee;
+    }
+
+    .swot-weakness .swot-card-head {
+      background: #fff1f1;
+    }
+
+    .swot-opportunity .swot-card-head {
+      background: #edf4ff;
+    }
+
+    .swot-threat .swot-card-head {
+      background: #fff4e7;
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .item textarea {
+      min-height: 90px;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .empty {
+      color: var(--text-soft);
+      padding: 16px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.75);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 18px 20px;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .swot-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 16px 12px 28px;
+      }
+
+      .hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>SWOT-Analyse</h1>
+      <p>Stärken, Schwächen, Chancen und Risiken strukturiert erfassen, bearbeiten und im Browser speichern.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Punkt hinzufügen</h2>
+          <div class="field">
+            <label for="swotType">Bereich</label>
+            <select id="swotType">
+              <option value="strengths">Stärken</option>
+              <option value="weaknesses">Schwächen</option>
+              <option value="opportunities">Chancen</option>
+              <option value="threats">Risiken</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newEntry">Inhalt</label>
+            <textarea id="newEntry" placeholder="z. B. Hohe Markenbekanntheit oder steigende Nachfrage im Markt"></textarea>
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addEntryBtn">Punkt hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveLocalBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadLocalBtn">Gespeicherten Stand laden</button>
+            <button class="btn-warning" id="exportTxtBtn">Als TXT exportieren</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="label">Stärken</div>
+              <div class="value" id="countStrengths">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Schwächen</div>
+              <div class="value" id="countWeaknesses">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Chancen</div>
+              <div class="value" id="countOpportunities">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Risiken</div>
+              <div class="value" id="countThreats">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Gesamtpunkte</div>
+              <div class="value" id="countTotal">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="swot-board">
+          <h2>SWOT-Matrix</h2>
+          <div class="swot-grid">
+            <section class="swot-card swot-strength">
+              <div class="swot-card-head">
+                <h3>Stärken</h3>
+                <p>Interne positive Faktoren und vorhandene Vorteile.</p>
+              </div>
+              <div class="swot-card-body" id="strengthsList"></div>
+            </section>
+
+            <section class="swot-card swot-weakness">
+              <div class="swot-card-head">
+                <h3>Schwächen</h3>
+                <p>Interne negative Faktoren und bestehende Defizite.</p>
+              </div>
+              <div class="swot-card-body" id="weaknessesList"></div>
+            </section>
+
+            <section class="swot-card swot-opportunity">
+              <div class="swot-card-head">
+                <h3>Chancen</h3>
+                <p>Externe positive Entwicklungen und Potenziale.</p>
+              </div>
+              <div class="swot-card-body" id="opportunitiesList"></div>
+            </section>
+
+            <section class="swot-card swot-threat">
+              <div class="swot-card-head">
+                <h3>Risiken</h3>
+                <p>Externe negative Einflüsse und mögliche Gefahren.</p>
+              </div>
+              <div class="swot-card-body" id="threatsList"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="note">
+          <h2>Hinweis</h2>
+          <p class="muted">
+            Alle Inhalte lassen sich direkt in den Feldern bearbeiten. Der Stand kann lokal im Browser gespeichert und später wieder geladen werden.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'swot_analyse_app_data_v1';
+
+    let state = {
+      strengths: [],
+      weaknesses: [],
+      opportunities: [],
+      threats: []
+    };
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    const exampleData = {
+      strengths: [
+        { id: uid(), text: 'Hohe Produktqualität' },
+        { id: uid(), text: 'Starke Markenbekanntheit' },
+        { id: uid(), text: 'Kurze interne Entscheidungswege' }
+      ],
+      weaknesses: [
+        { id: uid(), text: 'Abhängigkeit von einzelnen Lieferanten' },
+        { id: uid(), text: 'Begrenzte personelle Ressourcen' }
+      ],
+      opportunities: [
+        { id: uid(), text: 'Wachsende Nachfrage im Zielmarkt' },
+        { id: uid(), text: 'Neue Vertriebskanäle im E-Commerce' }
+      ],
+      threats: [
+        { id: uid(), text: 'Steigende Einkaufspreise' },
+        { id: uid(), text: 'Zunehmender Wettbewerbsdruck' }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (
+          !parsed ||
+          !Array.isArray(parsed.strengths) ||
+          !Array.isArray(parsed.weaknesses) ||
+          !Array.isArray(parsed.opportunities) ||
+          !Array.isArray(parsed.threats)
+        ) {
+          return false;
+        }
+
+        state = parsed;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function persistAndRender() {
+      saveState();
+      render();
+    }
+
+    function setExampleData() {
+      state = JSON.parse(JSON.stringify(exampleData));
+      persistAndRender();
+    }
+
+    function addEntry() {
+      const type = document.getElementById('swotType').value;
+      const textarea = document.getElementById('newEntry');
+      const text = textarea.value.trim();
+
+      if (!text) {
+        alert('Bitte einen Inhalt eingeben.');
+        return;
+      }
+
+      state[type].push({
+        id: uid(),
+        text
+      });
+
+      textarea.value = '';
+      persistAndRender();
+    }
+
+    function deleteEntry(type, id) {
+      state[type] = state[type].filter(entry => entry.id !== id);
+      persistAndRender();
+    }
+
+    function updateEntry(type, id, value) {
+      const entry = state[type].find(item => item.id === id);
+      if (!entry) return;
+      entry.text = value;
+      persistAndRender();
+    }
+
+    function renderSummary() {
+      const strengths = state.strengths.length;
+      const weaknesses = state.weaknesses.length;
+      const opportunities = state.opportunities.length;
+      const threats = state.threats.length;
+      const total = strengths + weaknesses + opportunities + threats;
+
+      document.getElementById('countStrengths').textContent = strengths;
+      document.getElementById('countWeaknesses').textContent = weaknesses;
+      document.getElementById('countOpportunities').textContent = opportunities;
+      document.getElementById('countThreats').textContent = threats;
+      document.getElementById('countTotal').textContent = total;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderList(type, containerId, emptyText) {
+      const container = document.getElementById(containerId);
+      const items = state[type];
+
+      if (!items.length) {
+        container.innerHTML = `<div class="empty">${escapeHtml(emptyText)}</div>`;
+        return;
+      }
+
+      let html = '';
+
+      items.forEach(item => {
+        html += `
+          <div class="item">
+            <textarea oninput="updateEntry('${type}', '${item.id}', this.value)">${escapeHtml(item.text)}</textarea>
+            <div class="item-actions">
+              <button class="small-btn btn-danger" onclick="deleteEntry('${type}', '${item.id}')">Löschen</button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function render() {
+      renderSummary();
+
+      renderList('strengths', 'strengthsList', 'Noch keine Stärken eingetragen.');
+      renderList('weaknesses', 'weaknessesList', 'Noch keine Schwächen eingetragen.');
+      renderList('opportunities', 'opportunitiesList', 'Noch keine Chancen eingetragen.');
+      renderList('threats', 'threatsList', 'Noch keine Risiken eingetragen.');
+    }
+
+    function exportTxt() {
+      const content = [
+        'SWOT-Analyse',
+        '',
+        'Stärken',
+        '--------',
+        ...(state.strengths.length ? state.strengths.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Schwächen',
+        '----------',
+        ...(state.weaknesses.length ? state.weaknesses.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Chancen',
+        '--------',
+        ...(state.opportunities.length ? state.opportunities.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Risiken',
+        '--------',
+        ...(state.threats.length ? state.threats.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge'])
+      ].join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'swot-analyse.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('addEntryBtn').addEventListener('click', addEntry);
+    document.getElementById('loadExampleBtn').addEventListener('click', setExampleData);
+    document.getElementById('saveLocalBtn').addEventListener('click', saveState);
+    document.getElementById('loadLocalBtn').addEventListener('click', () => {
+      if (!loadState()) {
+        alert('Kein gespeicherter Stand gefunden.');
+        return;
+      }
+      render();
+    });
+    document.getElementById('exportTxtBtn').addEventListener('click', exportTxt);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = {
+        strengths: [],
+        weaknesses: [],
+        opportunities: [],
+        threats: []
+      };
+      persistAndRender();
+    });
+
+    document.getElementById('newEntry').addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        addEntry();
+      }
+    });
+
+    if (!loadState()) {
+      setExampleData();
+    } else {
+      render();
+    }
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

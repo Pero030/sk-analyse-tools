@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A/B-Test Rechner</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1200px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .variant-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); padding: 24px; }
+    .variant-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .variant-badge { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
+    .variant-a .variant-badge { background: #e8f7ee; color: var(--success); }
+    .variant-b .variant-badge { background: #edf4ff; color: var(--accent); }
+    .variant-title h3 { margin: 0; font-size: 20px; }
+    .variant-title p { margin: 4px 0 0; color: var(--text-soft); font-size: 13px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .results-card {
+      grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow); padding: 24px;
+    }
+    .results-card h2 { margin: 0 0 20px; font-size: 20px; }
+    .results-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .result-box {
+      border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .result-box .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 10px; }
+    .result-box .value { font-size: 28px; font-weight: 700; }
+    .result-box .sub { font-size: 13px; color: var(--text-soft); margin-top: 6px; }
+    .winner { border-color: var(--success); background: linear-gradient(180deg, #e8f7ee 0%, #f8fafc 100%); }
+    .winner-badge { background: var(--success); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-top: 8px; }
+    .significant { color: var(--success); }
+    .not-significant { color: var(--warning); }
+    .formula-box {
+      grid-column: 1 / -1; background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px;
+    }
+    .formula-box h3 { margin: 0 0 10px; font-size: 14px; }
+    .formula-box p { margin: 0; font-size: 13px; color: var(--text-soft); }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .results-card { grid-column: auto; }
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) { .results-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>A/B-Test Rechner</h1>
+      <p>Statistische Signifikanz berechnen – Conversion Rates vergleichen und Gewinner ermitteln.</p>
+    </section>
+
+    <div class="layout">
+      <div class="variant-card variant-a">
+        <div class="variant-header">
+          <div class="variant-badge">A</div>
+          <div class="variant-title">
+            <h3>Variante A (Control)</h3>
+            <p>Bisherige Version</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="visitorsA">Besucher</label>
+          <input id="visitorsA" type="number" placeholder="1000" />
+        </div>
+        <div class="field">
+          <label for="conversionsA">Conversions</label>
+          <input id="conversionsA" type="number" placeholder="50" />
+        </div>
+      </div>
+
+      <div class="variant-card variant-b">
+        <div class="variant-header">
+          <div class="variant-badge">B</div>
+          <div class="variant-title">
+            <h3>Variante B (Test)</h3>
+            <p>Neue Version</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="visitorsB">Besucher</label>
+          <input id="visitorsB" type="number" placeholder="1000" />
+        </div>
+        <div class="field">
+          <label for="conversionsB">Conversions</label>
+          <input id="conversionsB" type="number" placeholder="65" />
+        </div>
+      </div>
+
+      <button class="btn-primary" id="calculateBtn">Berechnen</button>
+
+      <div class="results-card" id="resultsCard" style="display:none;">
+        <h2>Test-Ergebnisse</h2>
+        <div class="results-grid">
+          <div class="result-box" id="crABox">
+            <div class="label">Conversion Rate A</div>
+            <div class="value" id="crAValue">-</div>
+            <div class="sub" id="crASub">-</div>
+          </div>
+          <div class="result-box" id="crBBox">
+            <div class="label">Conversion Rate B</div>
+            <div class="value" id="crBValue">-</div>
+            <div class="sub" id="crBSub">-</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Relative Verbesserung</div>
+            <div class="value" id="upliftValue">-</div>
+            <div class="sub">B vs. A</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Statistische Signifikanz</div>
+            <div class="value" id="significanceValue">-</div>
+            <div class="sub" id="significanceText">-</div>
+          </div>
+        </div>
+
+        <div class="formula-box" style="margin-top:20px;">
+          <h3>Interpretation</h3>
+          <p id="interpretation">Berechne die Ergebnisse um eine Interpretation zu erhalten.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const visitorsA = parseInt(document.getElementById('visitorsA').value) || 0;
+      const conversionsA = parseInt(document.getElementById('conversionsA').value) || 0;
+      const visitorsB = parseInt(document.getElementById('visitorsB').value) || 0;
+      const conversionsB = parseInt(document.getElementById('conversionsB').value) || 0;
+
+      if (!visitorsA || !visitorsB) { alert('Bitte Besucher für beide Varianten eingeben'); return; }
+
+      const crA = (conversionsA / visitorsA * 100);
+      const crB = (conversionsB / visitorsB * 100);
+      const uplift = crA > 0 ? ((crB - crA) / crA * 100) : 0;
+
+      // Z-Test für zwei Proportionen
+      const p1 = conversionsA / visitorsA;
+      const p2 = conversionsB / visitorsB;
+      const p = (conversionsA + conversionsB) / (visitorsA + visitorsB);
+      const se = Math.sqrt(p * (1 - p) * (1/visitorsA + 1/visitorsB));
+      const z = se > 0 ? (p2 - p1) / se : 0;
+      const pValue = 2 * (1 - normalCDF(Math.abs(z)));
+      const isSignificant = pValue < 0.05;
+
+      document.getElementById('resultsCard').style.display = 'block';
+      document.getElementById('crAValue').textContent = crA.toFixed(2) + '%';
+      document.getElementById('crASub').textContent = `${conversionsA} von ${visitorsA}`;
+      document.getElementById('crBValue').textContent = crB.toFixed(2) + '%';
+      document.getElementById('crBSub').textContent = `${conversionsB} von ${visitorsB}`;
+
+      const upliftEl = document.getElementById('upliftValue');
+      upliftEl.textContent = (uplift >= 0 ? '+' : '') + uplift.toFixed(1) + '%';
+      upliftEl.className = 'value ' + (uplift >= 0 ? 'significant' : 'not-significant');
+
+      const sigEl = document.getElementById('significanceValue');
+      sigEl.textContent = isSignificant ? 'Ja ✅' : 'Nein ❌';
+      sigEl.className = 'value ' + (isSignificant ? 'significant' : 'not-significant');
+      document.getElementById('significanceText').textContent = `p = ${pValue.toFixed(4)}`;
+
+      document.getElementById('crABox').classList.remove('winner');
+      document.getElementById('crBBox').classList.remove('winner');
+
+      let interpretation = '';
+      if (isSignificant) {
+        if (crB > crA) {
+          document.getElementById('crBBox').classList.add('winner');
+          interpretation = `✅ Variante B gewinnt signifikant mit ${crB.toFixed(2)}% vs. ${crA.toFixed(2)}% (+${uplift.toFixed(1)}%). Du kannst B mit 95% Konfidenz implementieren.`;
+        } else {
+          document.getElementById('crABox').classList.add('winner');
+          interpretation = `✅ Variante A gewinnt signifikant. Bietet ${crA.toFixed(2)}% vs. ${crB.toFixed(2)}%. Behalte die aktuelle Version bei.`;
+        }
+      } else {
+        interpretation = `⚠️ Kein signifikanter Unterschied feststellbar (p = ${pValue.toFixed(4)}). Braucht mehr Daten oder der Unterschied ist zu klein.`;
+      }
+
+      document.getElementById('interpretation').textContent = interpretation;
+
+      document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function normalCDF(x) {
+      // Approximation der Normalverteilung
+      const t = 1 / (1 + 0.2316419 * Math.abs(x));
+      const d = 0.3989423 * Math.exp(-x * x / 2);
+      const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      return x > 0 ? 1 - p : p;
+    }
+
+    document.getElementById('calculateBtn').addEventListener('click', calculate);
+
+    // Beispieldaten laden
+    document.getElementById('visitorsA').value = 5000;
+    document.getElementById('conversionsA').value = 250;
+    document.getElementById('visitorsB').value = 5000;
+    document.getElementById('conversionsB').value = 320;
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

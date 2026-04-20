@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Acquisition Cost Analyse</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1400px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .results { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .results { padding: 24px; }
+    .results h2 { margin: 0 0 20px; font-size: 18px; }
+    .cac-display {
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 24px;
+    }
+    .cac-display .label { font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-bottom: 10px; }
+    .cac-display .value { font-size: 42px; font-weight: 700; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 10px; }
+    .stat-card .value { font-size: 24px; font-weight: 700; }
+    .channels-list { margin-top: 20px; }
+    .channel-item {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: var(--surface-soft); margin-bottom: 12px; display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: center;
+    }
+    .channel-name { font-weight: 700; }
+    .channel-metric { text-align: right; }
+    .channel-metric .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .channel-metric .value { font-size: 16px; font-weight: 700; }
+    .delete-btn { background: var(--danger); color: #fff; min-height: 32px; padding: 6px 12px; font-size: 12px; }
+    .good { color: var(--success); }
+    .warning { color: var(--warning); }
+    .bad { color: var(--danger); }
+    .ratio-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px;
+    }
+    .ratio-box h3 { margin: 0 0 12px; font-size: 16px; }
+    .ratio-display { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .ratio-hint { font-size: 14px; color: var(--text-soft); }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .channel-item { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 600px) { .summary-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Customer Acquisition Cost (CAC) Analyse</h1>
+      <p>Kundenakquisitionskosten berechnen – Nach Kanal, Zeit und im Verhältnis zum CLV.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Marketing-Kanal hinzufügen</h2>
+          <div class="field">
+            <label for="channelName">Kanal / Kampagne</label>
+            <input id="channelName" placeholder="z.B. Google Ads" />
+          </div>
+          <div class="field">
+            <label for="channelSpend">Marketing-Ausgaben (€)</label>
+            <input id="channelSpend" type="number" placeholder="5000" />
+          </div>
+          <div class="field">
+            <label for="channelCustomers">Neue Kunden</label>
+            <input id="channelCustomers" type="number" placeholder="50" />
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>CLV für Vergleich</h2>
+          <div class="field">
+            <label for="clvValue">Customer Lifetime Value (€)</label>
+            <input id="clvValueInput" type="number" placeholder="400" />
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="exampleBtn">Beispieldaten laden</button>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="resetBtn">Alle löschen</button>
+        </div>
+      </aside>
+
+      <main class="results">
+        <div class="cac-display">
+          <div class="label">Durchschnittlicher CAC</div>
+          <div class="value" id="avgCAC">0 €</div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="stat-card">
+            <div class="label">Gesamtausgaben</div>
+            <div class="value" id="totalSpend">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Neue Kunden</div>
+            <div class="value" id="totalCustomers">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Beste Kanal</div>
+            <div class="value" id="bestChannel" style="font-size:18px;">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Teuerster Kanal</div>
+            <div class="value" id="worstChannel" style="font-size:18px;">-</div>
+          </div>
+        </div>
+
+        <div class="ratio-box">
+          <h3>CAC : CLV Ratio</h3>
+          <div class="ratio-display" id="ratioDisplay">1 : -</div>
+          <div class="ratio-hint" id="ratioHint">Gib einen CLV-Wert ein für die Berechnung</div>
+        </div>
+
+        <div class="channels-list">
+          <h3>Kanal-Übersicht</h3>
+          <div id="channelsList">
+            <p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Kanäle hinzugefügt</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let channels = [];
+
+    function addChannel() {
+      const name = document.getElementById('channelName').value.trim();
+      const spend = parseFloat(document.getElementById('channelSpend').value) || 0;
+      const customers = parseFloat(document.getElementById('channelCustomers').value) || 0;
+
+      if (!name || spend <= 0 || customers <= 0) { alert('Bitte alle Werte eingeben'); return; }
+
+      const cac = spend / customers;
+      channels.push({ id: Date.now(), name, spend, customers, cac });
+      render();
+
+      document.getElementById('channelName').value = '';
+      document.getElementById('channelSpend').value = '';
+      document.getElementById('channelCustomers').value = '';
+    }
+
+    function deleteChannel(id) {
+      channels = channels.filter(c => c.id !== id);
+      render();
+    }
+
+    function render() {
+      let totalSpend = 0, totalCustomers = 0;
+      channels.forEach(c => { totalSpend += c.spend; totalCustomers += c.customers; });
+      const avgCAC = totalCustomers > 0 ? totalSpend / totalCustomers : 0;
+
+      document.getElementById('avgCAC').textContent = avgCAC.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('totalSpend').textContent = totalSpend.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('totalCustomers').textContent = totalCustomers;
+
+      if (channels.length) {
+        const sorted = [...channels].sort((a, b) => a.cac - b.cac);
+        document.getElementById('bestChannel').textContent = sorted[0].name;
+        document.getElementById('worstChannel').textContent = sorted[sorted.length - 1].name;
+      } else {
+        document.getElementById('bestChannel').textContent = '-';
+        document.getElementById('worstChannel').textContent = '-';
+      }
+
+      const clv = parseFloat(document.getElementById('clvValueInput').value) || 0;
+      if (clv > 0 && avgCAC > 0) {
+        const ratio = clv / avgCAC;
+        document.getElementById('ratioDisplay').textContent = `1 : ${ratio.toFixed(1)}`;
+        const hintEl = document.getElementById('ratioHint');
+        if (ratio >= 3) { hintEl.textContent = '🟢 Excellent - Sehr gesundes Business'; hintEl.style.color = 'var(--success)'; }
+        else if (ratio >= 2) { hintEl.textContent = '🟡 Gut - Akzeptabler Bereich'; hintEl.style.color = 'var(--warning)'; }
+        else { hintEl.textContent = '🔴 Warnung - CAC zu hoch oder CLV zu niedrig'; hintEl.style.color = 'var(--danger)'; }
+      }
+
+      const list = document.getElementById('channelsList');
+      if (!channels.length) {
+        list.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Kanäle hinzugefügt</p>';
+        return;
+      }
+
+      list.innerHTML = channels.map(c => {
+        let cacClass = '';
+        if (clv > 0) {
+          const ratio = clv / c.cac;
+          if (ratio >= 3) cacClass = 'good';
+          else if (ratio >= 2) cacClass = 'warning';
+          else cacClass = 'bad';
+        }
+        return `
+        <div class="channel-item">
+          <div class="channel-name">${c.name}</div>
+          <div class="channel-metric">
+            <div class="label">Ausgaben</div>
+            <div class="value">${c.spend.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="channel-metric">
+            <div class="label">Kunden</div>
+            <div class="value">${c.customers}</div>
+          </div>
+          <div class="channel-metric">
+            <div class="label">CAC</div>
+            <div class="value ${cacClass}">${c.cac.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+          </div>
+          <div class="channel-metric">
+            <div class="label">CLV:CAC</div>
+            <div class="value">${clv > 0 ? (clv / c.cac).toFixed(1) : '-'}</div>
+          </div>
+          <button class="delete-btn" onclick="deleteChannel(${c.id})">×</button>
+        </div>
+      `}).join('');
+    }
+
+    function loadExample() {
+      channels = [
+        { id: 1, name: 'Google Ads', spend: 8000, customers: 80, cac: 100 },
+        { id: 2, name: 'Facebook Ads', spend: 6000, customers: 120, cac: 50 },
+        { id: 3, name: 'SEO/Content', spend: 3000, customers: 100, cac: 30 },
+        { id: 4, name: 'Influencer', spend: 10000, customers: 50, cac: 200 },
+        { id: 5, name: 'Events', spend: 5000, customers: 25, cac: 200 }
+      ];
+      document.getElementById('clvValueInput').value = 400;
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addChannel);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Alle Kanäle löschen?')) { channels = []; render(); } });
+    document.getElementById('clvValueInput').addEventListener('input', render);
+
+    loadExample();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

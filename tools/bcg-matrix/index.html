@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCG Matrix – Scoring</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#eef2f7;color:#172033}
+.app{max-width:1400px;margin:auto;padding:30px}
+
+.hero{
+background:#172033;color:#fff;padding:20px;border-radius:16px;margin-bottom:20px
+}
+
+.layout{
+display:grid;
+grid-template-columns:320px 1fr;
+gap:20px
+}
+
+.panel,.board{
+background:#fff;border-radius:16px;padding:20px;border:1px solid #d8e1ec
+}
+
+.field{margin-bottom:12px}
+input,button{
+width:100%;padding:10px;border-radius:8px;border:1px solid #ccc
+}
+
+button{cursor:pointer;font-weight:bold}
+.btn{background:#172033;color:#fff}
+
+.table{
+width:100%;border-collapse:collapse;margin-top:10px
+}
+.table th,.table td{
+border:1px solid #ddd;padding:8px;text-align:center
+}
+
+.result{
+font-weight:bold
+}
+
+.star{background:#e8f7ee}
+.cash{background:#edf4ff}
+.qm{background:#fff4e7}
+.dog{background:#fff1f1}
+
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="hero">
+<h1>BCG Matrix (mit Auswertung)</h1>
+<p>Marktwachstum + Marktanteil → automatische Einordnung</p>
+</div>
+
+<div class="layout">
+
+<div class="panel">
+
+<div class="field">
+<input id="name" placeholder="Produkt / Kategorie">
+</div>
+
+<div class="field">
+<label>Marktwachstum (1–10)</label>
+<input id="growth" type="number" min="1" max="10">
+</div>
+
+<div class="field">
+<label>Marktanteil (1–10)</label>
+<input id="share" type="number" min="1" max="10">
+</div>
+
+<button class="btn" onclick="add()">Hinzufügen</button>
+<button onclick="reset()">Reset</button>
+
+</div>
+
+<div class="board">
+
+<table class="table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Wachstum</th>
+<th>Anteil</th>
+<th>Score</th>
+<th>Kategorie</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let data=[];
+
+function calcCategory(growth,share){
+if(growth>=6 && share>=6) return {name:"Star", class:"star"};
+if(growth<6 && share>=6) return {name:"Cash Cow", class:"cash"};
+if(growth>=6 && share<6) return {name:"Question Mark", class:"qm"};
+return {name:"Dog", class:"dog"};
+}
+
+function add(){
+const name=document.getElementById("name").value;
+const growth=Number(document.getElementById("growth").value);
+const share=Number(document.getElementById("share").value);
+
+if(!name) return alert("Name fehlt");
+
+const score=growth*share;
+const cat=calcCategory(growth,share);
+
+data.push({name,growth,share,score,cat});
+
+render();
+}
+
+function render(){
+const table=document.getElementById("table");
+table.innerHTML="";
+
+data.forEach(d=>{
+table.innerHTML+=`
+<tr class="${d.cat.class}">
+<td>${d.name}</td>
+<td>${d.growth}</td>
+<td>${d.share}</td>
+<td class="result">${d.score}</td>
+<td>${d.cat.name}</td>
+</tr>
+`;
+});
+}
+
+function reset(){
+data=[];
+render();
+}
+
+</script>
+
+  <script src="header-loader.js"></script>
+</body>
+</html>

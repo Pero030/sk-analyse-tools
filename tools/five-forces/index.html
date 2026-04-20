@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porter's Five Forces Analyse</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --danger: #c62828;
+      --danger-hover: #a61f1f;
+      --warning: #b26a00;
+      --warning-hover: #945700;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --input-height: 44px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #ffffff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 920px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel,
+    .summary,
+    .board,
+    .note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel h2,
+    .summary h2,
+    .board h2,
+    .note h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .section + .section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field + .field {
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    input,
+    select {
+      min-height: var(--input-height);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    button {
+      min-height: var(--input-height);
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background: var(--warning-hover);
+    }
+
+    .btn-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      gap: 20px;
+    }
+
+    .summary {
+      padding: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .card .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .board {
+      padding: 20px;
+    }
+
+    .forces-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .force-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+      overflow: hidden;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .force-card-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+
+    .force-card-head h3 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .force-card-head p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    .force-card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      background: var(--surface-soft);
+    }
+
+    .rivalry .force-card-head {
+      background: #fff1f1;
+    }
+
+    .new-entrants .force-card-head {
+      background: #edf4ff;
+    }
+
+    .suppliers .force-card-head {
+      background: #fff4e7;
+    }
+
+    .buyers .force-card-head {
+      background: #e8f7ee;
+    }
+
+    .substitutes .force-card-head {
+      background: #f3ecff;
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .item textarea {
+      min-height: 90px;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .empty {
+      color: var(--text-soft);
+      padding: 16px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.75);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 18px 20px;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    @media (max-width: 1280px) {
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .forces-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 16px 12px 28px;
+      }
+
+      .hero {
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Porter's Five Forces Analyse</h1>
+      <p>
+        Wettbewerb, neue Anbieter, Lieferantenmacht, Kundenmacht und Ersatzprodukte strukturiert erfassen,
+        direkt bearbeiten und lokal im Browser speichern.
+      </p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Faktor hinzufügen</h2>
+          <div class="field">
+            <label for="forceType">Bereich</label>
+            <select id="forceType">
+              <option value="rivalry">Wettbewerbsintensität</option>
+              <option value="newEntrants">Bedrohung durch neue Anbieter</option>
+              <option value="suppliers">Verhandlungsmacht der Lieferanten</option>
+              <option value="buyers">Verhandlungsmacht der Kunden</option>
+              <option value="substitutes">Bedrohung durch Ersatzprodukte</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newEntry">Inhalt</label>
+            <textarea id="newEntry" placeholder="z. B. Hoher Preisdruck durch viele vergleichbare Anbieter"></textarea>
+          </div>
+          <div class="field">
+            <button class="btn-primary" id="addEntryBtn">Faktor hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div class="btn-stack">
+            <button class="btn-secondary" id="loadExampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveLocalBtn">Im Browser speichern</button>
+            <button class="btn-secondary" id="loadLocalBtn">Gespeicherten Stand laden</button>
+            <button class="btn-warning" id="exportTxtBtn">Als TXT exportieren</button>
+            <button class="btn-danger" id="resetBtn">Alles zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="summary">
+          <h2>Übersicht</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="label">Wettbewerb</div>
+              <div class="value" id="countRivalry">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Neue Anbieter</div>
+              <div class="value" id="countNewEntrants">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Lieferanten</div>
+              <div class="value" id="countSuppliers">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Kunden</div>
+              <div class="value" id="countBuyers">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Substitute</div>
+              <div class="value" id="countSubstitutes">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Gesamt</div>
+              <div class="value" id="countTotal">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="board">
+          <h2>Five Forces Matrix</h2>
+          <div class="forces-grid">
+            <section class="force-card rivalry">
+              <div class="force-card-head">
+                <h3>Wettbewerbsintensität</h3>
+                <p>Bestehende Marktteilnehmer, Preisdruck, Differenzierung, Markttransparenz.</p>
+              </div>
+              <div class="force-card-body" id="rivalryList"></div>
+            </section>
+
+            <section class="force-card new-entrants">
+              <div class="force-card-head">
+                <h3>Neue Anbieter</h3>
+                <p>Markteintrittsbarrieren, Kapitalbedarf, Markenstärke, Zugang zu Vertrieb.</p>
+              </div>
+              <div class="force-card-body" id="newEntrantsList"></div>
+            </section>
+
+            <section class="force-card suppliers">
+              <div class="force-card-head">
+                <h3>Lieferantenmacht</h3>
+                <p>Abhängigkeiten, Anzahl der Lieferanten, Verhandlungsspielraum, Wechselkosten.</p>
+              </div>
+              <div class="force-card-body" id="suppliersList"></div>
+            </section>
+
+            <section class="force-card buyers">
+              <div class="force-card-head">
+                <h3>Kundenmacht</h3>
+                <p>Preissensibilität, Vergleichbarkeit, Wechselbereitschaft, Erwartungshaltung.</p>
+              </div>
+              <div class="force-card-body" id="buyersList"></div>
+            </section>
+
+            <section class="force-card substitutes">
+              <div class="force-card-head">
+                <h3>Ersatzprodukte</h3>
+                <p>Alternative Lösungen, ähnliche Angebote, andere Kaufwege, Verlagerung des Bedarfs.</p>
+              </div>
+              <div class="force-card-body" id="substitutesList"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="note">
+          <h2>Hinweis</h2>
+          <p class="muted">
+            Alle Inhalte lassen sich direkt in den Feldern bearbeiten. Der Stand kann lokal im Browser gespeichert,
+            wieder geladen und als TXT-Datei exportiert werden.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'five_forces_analyse_app_data_v1';
+
+    let state = {
+      rivalry: [],
+      newEntrants: [],
+      suppliers: [],
+      buyers: [],
+      substitutes: []
+    };
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    const exampleData = {
+      rivalry: [
+        { id: uid(), text: 'Viele vergleichbare Shops erzeugen hohen Preisdruck' },
+        { id: uid(), text: 'Produktvergleich ist für Kunden sehr einfach' }
+      ],
+      newEntrants: [
+        { id: uid(), text: 'Online-Markteintritt ist technisch relativ leicht' },
+        { id: uid(), text: 'Neue Anbieter können schnell Nischen besetzen' }
+      ],
+      suppliers: [
+        { id: uid(), text: 'Abhängigkeit von wenigen Marken oder Herstellern' },
+        { id: uid(), text: 'Lieferengpässe erhöhen den Druck auf das Sortiment' }
+      ],
+      buyers: [
+        { id: uid(), text: 'Kunden haben hohe Preistransparenz und viele Alternativen' },
+        { id: uid(), text: 'Erwartung an Versand, Diskretion und Service ist hoch' }
+      ],
+      substitutes: [
+        { id: uid(), text: 'Alternative Produkte oder günstigere Varianten sind leicht verfügbar' },
+        { id: uid(), text: 'Kunden können auf andere Plattformen oder Händler ausweichen' }
+      ]
+    };
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (
+          !parsed ||
+          !Array.isArray(parsed.rivalry) ||
+          !Array.isArray(parsed.newEntrants) ||
+          !Array.isArray(parsed.suppliers) ||
+          !Array.isArray(parsed.buyers) ||
+          !Array.isArray(parsed.substitutes)
+        ) {
+          return false;
+        }
+
+        state = parsed;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function persistAndRender() {
+      saveState();
+      render();
+    }
+
+    function setExampleData() {
+      state = JSON.parse(JSON.stringify(exampleData));
+      persistAndRender();
+    }
+
+    function addEntry() {
+      const type = document.getElementById('forceType').value;
+      const textarea = document.getElementById('newEntry');
+      const text = textarea.value.trim();
+
+      if (!text) {
+        alert('Bitte einen Inhalt eingeben.');
+        return;
+      }
+
+      state[type].push({
+        id: uid(),
+        text
+      });
+
+      textarea.value = '';
+      persistAndRender();
+    }
+
+    function deleteEntry(type, id) {
+      state[type] = state[type].filter(entry => entry.id !== id);
+      persistAndRender();
+    }
+
+    function updateEntry(type, id, value) {
+      const entry = state[type].find(item => item.id === id);
+      if (!entry) return;
+      entry.text = value;
+      persistAndRender();
+    }
+
+    function renderSummary() {
+      const rivalry = state.rivalry.length;
+      const newEntrants = state.newEntrants.length;
+      const suppliers = state.suppliers.length;
+      const buyers = state.buyers.length;
+      const substitutes = state.substitutes.length;
+      const total = rivalry + newEntrants + suppliers + buyers + substitutes;
+
+      document.getElementById('countRivalry').textContent = rivalry;
+      document.getElementById('countNewEntrants').textContent = newEntrants;
+      document.getElementById('countSuppliers').textContent = suppliers;
+      document.getElementById('countBuyers').textContent = buyers;
+      document.getElementById('countSubstitutes').textContent = substitutes;
+      document.getElementById('countTotal').textContent = total;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderList(type, containerId, emptyText) {
+      const container = document.getElementById(containerId);
+      const items = state[type];
+
+      if (!items.length) {
+        container.innerHTML = `<div class="empty">${escapeHtml(emptyText)}</div>`;
+        return;
+      }
+
+      let html = '';
+
+      items.forEach(item => {
+        html += `
+          <div class="item">
+            <textarea oninput="updateEntry('${type}', '${item.id}', this.value)">${escapeHtml(item.text)}</textarea>
+            <div class="item-actions">
+              <button class="small-btn btn-danger" onclick="deleteEntry('${type}', '${item.id}')">Löschen</button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function render() {
+      renderSummary();
+
+      renderList('rivalry', 'rivalryList', 'Noch keine Faktoren zur Wettbewerbsintensität eingetragen.');
+      renderList('newEntrants', 'newEntrantsList', 'Noch keine Faktoren zu neuen Anbietern eingetragen.');
+      renderList('suppliers', 'suppliersList', 'Noch keine Faktoren zur Lieferantenmacht eingetragen.');
+      renderList('buyers', 'buyersList', 'Noch keine Faktoren zur Kundenmacht eingetragen.');
+      renderList('substitutes', 'substitutesList', 'Noch keine Faktoren zu Ersatzprodukten eingetragen.');
+    }
+
+    function exportTxt() {
+      const content = [
+        'Porter Five Forces Analyse',
+        '',
+        'Wettbewerbsintensität',
+        '---------------------',
+        ...(state.rivalry.length ? state.rivalry.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Bedrohung durch neue Anbieter',
+        '-----------------------------',
+        ...(state.newEntrants.length ? state.newEntrants.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Verhandlungsmacht der Lieferanten',
+        '---------------------------------',
+        ...(state.suppliers.length ? state.suppliers.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Verhandlungsmacht der Kunden',
+        '----------------------------',
+        ...(state.buyers.length ? state.buyers.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge']),
+        '',
+        'Bedrohung durch Ersatzprodukte',
+        '------------------------------',
+        ...(state.substitutes.length ? state.substitutes.map((item, index) => `${index + 1}. ${item.text}`) : ['Keine Einträge'])
+      ].join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'five-forces-analyse.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('addEntryBtn').addEventListener('click', addEntry);
+    document.getElementById('loadExampleBtn').addEventListener('click', setExampleData);
+    document.getElementById('saveLocalBtn').addEventListener('click', saveState);
+    document.getElementById('loadLocalBtn').addEventListener('click', () => {
+      if (!loadState()) {
+        alert('Kein gespeicherter Stand gefunden.');
+        return;
+      }
+      render();
+    });
+    document.getElementById('exportTxtBtn').addEventListener('click', exportTxt);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = {
+        rivalry: [],
+        newEntrants: [],
+        suppliers: [],
+        buyers: [],
+        substitutes: []
+      };
+      persistAndRender();
+    });
+
+    document.getElementById('newEntry').addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        addEntry();
+      }
+    });
+
+    if (!loadState()) {
+      setExampleData();
+    } else {
+      render();
+    }
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

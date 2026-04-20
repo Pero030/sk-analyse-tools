@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preisgestaltungs-Analyse</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1400px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .results { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+    input:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .results { padding: 24px; }
+    .results h2 { margin: 0 0 20px; font-size: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); text-align: center;
+    }
+    .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-bottom: 10px; }
+    .stat-card .value { font-size: 24px; font-weight: 700; }
+    .stat-card .unit { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
+    .products-list { margin-top: 20px; }
+    .product-item {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: var(--surface-soft); margin-bottom: 12px;
+    }
+    .product-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .product-name { font-weight: 700; font-size: 18px; }
+    .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .product-metric { text-align: center; }
+    .product-metric .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .product-metric .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+    .delete-btn { background: var(--danger); color: #fff; min-height: 32px; padding: 6px 12px; font-size: 12px; }
+    .price-chart { margin-top: 20px; }
+    .chart-bar {
+      display: flex; align-items: center; margin-bottom: 12px;
+    }
+    .chart-label { width: 150px; font-size: 13px; font-weight: 700; }
+    .chart-track { flex: 1; height: 32px; background: var(--border); border-radius: 6px; position: relative; overflow: hidden; }
+    .chart-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: #fff; font-size: 12px; font-weight: 700; }
+    .chart-value { width: 80px; text-align: right; font-weight: 700; }
+    .strategies-box {
+      border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px;
+    }
+    .strategies-box h3 { margin: 0 0 16px; font-size: 16px; }
+    .strategy-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .strategy-row:last-child { border-bottom: none; }
+    .strategy-name { font-weight: 700; }
+    .strategy-price { color: var(--accent); font-weight: 700; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) { 
+      .summary-grid, .product-grid { grid-template-columns: 1fr; }
+      .chart-label { width: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Preisgestaltungs-Analyse</h1>
+      <p>Produktpreise analysieren – Deckungsbeitrag, Marge und verschiedene Preisstrategien berechnen.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Produkt hinzufügen</h2>
+          <div class="field">
+            <label for="productName">Produktname</label>
+            <input id="productName" placeholder="z.B. Premium Headset" />
+          </div>
+          <div class="field">
+            <label for="costPrice">Einkaufspreis / Herstellkosten (€)</label>
+            <input id="costPrice" type="number" placeholder="50" />
+          </div>
+          <div class="field">
+            <label for="currentPrice">Aktueller Verkaufspreis (€)</label>
+            <input id="currentPrice" type="number" placeholder="99" />
+          </div>
+          <div class="field">
+            <label for="monthlySales">Ø Verkäufe/Monat</label>
+            <input id="monthlySales" type="number" placeholder="100" />
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Strategie-Vergleich</h2>
+          <div class="field">
+            <label for="strategyPrice">Alternativpreis testen (€)</label>
+            <input id="strategyPrice" type="number" placeholder="89" />
+          </div>
+          <button class="btn-secondary" id="strategyBtn" style="width:100%;">Strategie berechnen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="exampleBtn">Beispieldaten laden</button>
+          <button class="btn-secondary" style="width:100%;margin-bottom:8px;" id="resetBtn">Alle löschen</button>
+        </div>
+      </aside>
+
+      <main class="results">
+        <h2>Übersicht</h2>
+        <div class="summary-grid">
+          <div class="stat-card">
+            <div class="label">Ø Marge</div>
+            <div class="value" id="avgMargin">0%</div>
+            <div class="unit">Bruttomarge</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Ø Deckungsbeitrag</div>
+            <div class="value" id="avgContribution">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Gesamtumsatz/Monat</div>
+            <div class="value" id="totalRevenue">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Gesamtgewinn/Monat</div>
+            <div class="value" id="totalProfit">0 €</div>
+          </div>
+        </div>
+
+        <div class="price-chart" id="priceChart">
+          <h3>Margen-Vergleich</h3>
+          <p style="color:var(--text-soft);">Füge Produkte hinzu um die Visualisierung zu sehen</p>
+        </div>
+
+        <div class="products-list">
+          <h3>Produkt-Details</h3>
+          <div id="productsList">
+            <p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Produkte hinzugefügt</p>
+          </div>
+        </div>
+
+        <div class="strategies-box" id="strategiesBox" style="display:none;">
+          <h3>Preisstrategie-Vergleich</h3>
+          <div id="strategiesContent"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+
+    function addProduct() {
+      const name = document.getElementById('productName').value.trim();
+      const cost = parseFloat(document.getElementById('costPrice').value) || 0;
+      const price = parseFloat(document.getElementById('currentPrice').value) || 0;
+      const sales = parseInt(document.getElementById('monthlySales').value) || 0;
+
+      if (!name || cost <= 0 || price <= 0) { alert('Bitte Name, Kosten und Preis eingeben'); return; }
+
+      const margin = ((price - cost) / price * 100);
+      const contribution = price - cost;
+      const revenue = price * sales;
+      const profit = contribution * sales;
+
+      products.push({ id: Date.now(), name, cost, price, sales, margin, contribution, revenue, profit });
+      render();
+
+      document.getElementById('productName').value = '';
+      document.getElementById('costPrice').value = '';
+      document.getElementById('currentPrice').value = '';
+      document.getElementById('monthlySales').value = '';
+    }
+
+    function deleteProduct(id) {
+      products = products.filter(p => p.id !== id);
+      render();
+    }
+
+    function calculateStrategy() {
+      const newPrice = parseFloat(document.getElementById('strategyPrice').value) || 0;
+      if (!newPrice || !products.length) { alert('Bitte Preis eingeben und Produkte hinzufügen'); return; }
+
+      const strategiesBox = document.getElementById('strategiesBox');
+      const strategiesContent = document.getElementById('strategiesContent');
+      strategiesBox.style.display = 'block';
+
+      let html = '<div style="margin-bottom:20px;">';
+      html += '<table style="width:100%;border-collapse:collapse;">';
+      html += '<tr style="border-bottom:2px solid var(--border);"><th style="text-align:left;padding:10px;">Produkt</th><th style="text-align:right;padding:10px;">Aktuell</th><th style="text-align:right;padding:10px;">Neu @ ' + newPrice + '€</th><th style="text-align:right;padding:10px;">Diff.</th></tr>';
+      
+      let totalCurrent = 0, totalNew = 0;
+      products.forEach(p => {
+        const current = p.profit;
+        // Annahme: Elastizität - bei niedrigerem Preis mehr Verkäufe, bei höherem weniger
+        const priceDiff = (newPrice - p.price) / p.price;
+        const elasticity = -1.5; // Preiselastizität
+        const volumeChange = priceDiff * elasticity;
+        const newSales = Math.round(p.sales * (1 + volumeChange));
+        const newContribution = newPrice - p.cost;
+        const newProfit = newContribution * newSales;
+        
+        totalCurrent += current;
+        totalNew += newProfit;
+        const diff = newProfit - current;
+        const diffClass = diff >= 0 ? 'good' : 'critical';
+        
+        html += `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px;">${p.name}</td>
+          <td style="text-align:right;padding:10px;">${current.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</td>
+          <td style="text-align:right;padding:10px;">${newProfit.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})} (${newSales} Stk)</td>
+          <td style="text-align:right;padding:10px;color:${diff >= 0 ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${diff >= 0 ? '+' : ''}${diff.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</td>
+        </tr>`;
+      });
+      
+      const totalDiff = totalNew - totalCurrent;
+      html += `<tr style="font-weight:700;background:var(--surface-soft);">
+        <td style="padding:10px;">GESAMT</td>
+        <td style="text-align:right;padding:10px;">${totalCurrent.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</td>
+        <td style="text-align:right;padding:10px;">${totalNew.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</td>
+        <td style="text-align:right;padding:10px;color:${totalDiff >= 0 ? 'var(--success)' : 'var(--danger)'};">${totalDiff >= 0 ? '+' : ''}${totalDiff.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</td>
+      </tr>`;
+      html += '</table></div>';
+      
+      strategiesContent.innerHTML = html;
+    }
+
+    function render() {
+      let totalMargin = 0, totalContribution = 0, totalRevenue = 0, totalProfit = 0;
+      products.forEach(p => { 
+        totalMargin += p.margin; 
+        totalContribution += p.contribution;
+        totalRevenue += p.revenue; 
+        totalProfit += p.profit; 
+      });
+      const avgMargin = products.length ? (totalMargin / products.length).toFixed(1) : 0;
+      const avgContribution = products.length ? (totalContribution / products.length) : 0;
+
+      document.getElementById('avgMargin').textContent = avgMargin + '%';
+      document.getElementById('avgContribution').textContent = avgContribution.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+      document.getElementById('totalProfit').textContent = totalProfit.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0});
+
+      // Chart
+      const chartDiv = document.getElementById('priceChart');
+      if (products.length) {
+        const maxMargin = Math.max(...products.map(p => p.margin));
+        let chartHTML = '<h3 style="margin-bottom:16px;">Margen-Vergleich</h3>';
+        products.forEach(p => {
+          const width = (p.margin / maxMargin * 100);
+          const color = p.margin >= 50 ? 'var(--success)' : p.margin >= 30 ? 'var(--accent)' : p.margin >= 15 ? 'var(--warning)' : 'var(--danger)';
+          chartHTML += `
+            <div class="chart-bar">
+              <div class="chart-label">${p.name}</div>
+              <div class="chart-track">
+                <div class="chart-fill" style="width:${width}%;background:${color};">${p.margin.toFixed(0)}%</div>
+              </div>
+              <div class="chart-value">${p.contribution.toLocaleString('de-DE', {style:'currency',currency:'EUR'})}</div>
+            </div>
+          `;
+        });
+        chartDiv.innerHTML = chartHTML;
+      }
+
+      // Products list
+      const list = document.getElementById('productsList');
+      if (!products.length) {
+        list.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Produkte hinzugefügt</p>';
+        return;
+      }
+
+      list.innerHTML = products.map(p => `
+        <div class="product-item">
+          <div class="product-header">
+            <span class="product-name">${p.name}</span>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">Löschen</button>
+          </div>
+          <div class="product-grid">
+            <div class="product-metric">
+              <div class="label">Einkauf</div>
+              <div class="value">${p.cost.toLocaleString('de-DE', {style:'currency',currency:'EUR'})}</div>
+            </div>
+            <div class="product-metric">
+              <div class="label">Verkauf</div>
+              <div class="value">${p.price.toLocaleString('de-DE', {style:'currency',currency:'EUR'})}</div>
+            </div>
+            <div class="product-metric">
+              <div class="label">Marge</div>
+              <div class="value ${p.margin >= 40 ? 'good' : p.margin >= 20 ? 'warning' : 'critical'}">${p.margin.toFixed(1)}%</div>
+            </div>
+            <div class="product-metric">
+              <div class="label">DB/Monat</div>
+              <div class="value">${p.profit.toLocaleString('de-DE', {style:'currency',currency:'EUR',maximumFractionDigits:0})}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadExample() {
+      products = [
+        { id: 1, name: 'Premium Headset', cost: 50, price: 99, sales: 80, margin: 49.5, contribution: 49, revenue: 7920, profit: 3920 },
+        { id: 2, name: 'Budget Headset', cost: 15, price: 29, sales: 200, margin: 48.3, contribution: 14, revenue: 5800, profit: 2800 },
+        { id: 3, name: 'Gaming Headset', cost: 80, price: 149, sales: 45, margin: 46.3, contribution: 69, revenue: 6705, profit: 3105 },
+        { id: 4, name: 'Studio Headset', cost: 120, price: 199, sales: 25, margin: 39.7, contribution: 79, revenue: 4975, profit: 1975 }
+      ];
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addProduct);
+    document.getElementById('strategyBtn').addEventListener('click', calculateStrategy);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Alle Produkte löschen?')) { products = []; document.getElementById('strategiesBox').style.display = 'none'; render(); } });
+
+    loadExample();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

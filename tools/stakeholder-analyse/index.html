@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stakeholder-Analyse</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --transition: 0.18s ease;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.9), rgba(255,255,255,0) 30%), linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .app { max-width: 1600px; margin: 0 auto; padding: 32px 20px 40px; }
+    .hero {
+      margin-bottom: 22px;
+      padding: 26px 28px;
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.02em; }
+    .hero p { margin: 0; color: rgba(255,255,255,0.82); font-size: 15px; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .panel, .matrix-board { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+    .panel { padding: 20px; position: sticky; top: 20px; }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text-soft); }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+      padding: 10px 12px; font: inherit; background: #fff; color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input, select { min-height: 44px; }
+    textarea { min-height: 80px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: #8ca3c4; box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18); }
+    button {
+      min-height: 44px; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer; font-weight: 700; transition: transform var(--transition), background var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e9eef5; color: var(--text); }
+    .btn-secondary:hover { background: #dde6f0; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .section + .section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .matrix-board { padding: 24px; }
+    .matrix-board h2 { margin: 0 0 20px; font-size: 18px; }
+    .matrix-grid { display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 8px; }
+    .matrix-header { font-size: 12px; font-weight: 700; text-align: center; padding: 10px; color: var(--text-soft); }
+    .matrix-y-label { font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: var(--text-soft); }
+    .matrix-cell {
+      border: 1px solid var(--border); border-radius: 12px; min-height: 120px;
+      background: var(--surface-soft); padding: 10px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .cell-low { background: #e8f7ee; }
+    .cell-med { background: #fff4e7; }
+    .cell-high { background: #fff1f1; }
+    .stakeholder-item {
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .stakeholder-item:hover { border-color: var(--accent); }
+    .stakeholder-name { font-weight: 700; }
+    .stakeholder-role { font-size: 11px; color: var(--text-soft); }
+    .stakeholders-list { margin-top: 24px; }
+    .stakeholder-card {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: var(--surface-soft); margin-bottom: 12px; display: grid;
+      grid-template-columns: 1fr 100px 100px auto; gap: 16px; align-items: center;
+    }
+    .stakeholder-info h4 { margin: 0 0 4px; }
+    .stakeholder-info p { margin: 0; font-size: 13px; color: var(--text-soft); }
+    .score-box { text-align: center; }
+    .score-box .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+    .score-box .value { font-size: 18px; font-weight: 700; }
+    .priority-high { color: var(--danger); }
+    .priority-med { color: var(--warning); }
+    .priority-low { color: var(--success); }
+    .legend { display: flex; gap: 20px; margin-bottom: 20px; font-size: 13px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+    @media (max-width: 1000px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+      .matrix-grid { grid-template-columns: 60px repeat(4, 1fr); }
+      .stakeholder-card { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 600px) { .matrix-grid { grid-template-columns: 40px repeat(4, 1fr); font-size: 11px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Stakeholder-Analyse</h1>
+      <p>Stakeholder nach Einfluss und Interesse einordnen – Matrix für strategische Priorisierung.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="section">
+          <h2>Stakeholder hinzufügen</h2>
+          <div class="field">
+            <label for="stakeholderName">Name</label>
+            <input id="stakeholderName" placeholder="z.B. Marketing Director" />
+          </div>
+          <div class="field">
+            <label for="stakeholderRole">Rolle / Position</label>
+            <input id="stakeholderRole" placeholder="z.B. Entscheidungsbefugt" />
+          </div>
+          <div class="field">
+            <label for="influence">Einfluss (1-10)</label>
+            <input id="influence" type="number" min="1" max="10" value="5" />
+          </div>
+          <div class="field">
+            <label for="interest">Interesse (1-10)</label>
+            <input id="interest" type="number" min="1" max="10" value="5" />
+          </div>
+          <div class="field">
+            <label for="expectations">Erwartungen</label>
+            <textarea id="expectations" placeholder="Was erwartet dieser Stakeholder?"></textarea>
+          </div>
+          <button class="btn-primary" id="addBtn">Hinzufügen</button>
+        </div>
+
+        <div class="section">
+          <h2>Aktionen</h2>
+          <div style="display:grid;gap:10px;">
+            <button class="btn-secondary" id="exampleBtn">Beispieldaten laden</button>
+            <button class="btn-secondary" id="saveBtn">Speichern</button>
+            <button class="btn-secondary" id="loadBtn">Laden</button>
+            <button class="btn-danger" id="resetBtn">Zurücksetzen</button>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <section class="matrix-board">
+          <h2>Stakeholder-Matrix</h2>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background:#fff1f1;"></div> Hoch Einfluss/Interesse</div>
+            <div class="legend-item"><div class="legend-color" style="background:#fff4e7;"></div> Mittel</div>
+            <div class="legend-item"><div class="legend-color" style="background:#e8f7ee;"></div> Niedrig</div>
+          </div>
+          <div class="matrix-grid" id="matrixGrid">
+            <!-- Generated by JS -->
+          </div>
+        </section>
+
+        <section class="stakeholders-list">
+          <h2>Stakeholder-Liste</h2>
+          <div id="stakeholdersList">
+            <p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Stakeholder erfasst</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'stakeholder_analysis_v1';
+    let stakeholders = [];
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function getMatrixCell(influence, interest) {
+      if (influence >= 7 && interest >= 7) return 'high-high';
+      if (influence >= 7 && interest < 7) return 'high-low';
+      if (influence < 7 && interest >= 7) return 'low-high';
+      return 'low-low';
+    }
+
+    function getCellClass(influence, interest) {
+      if (influence >= 7 && interest >= 7) return 'cell-high';
+      if (influence >= 7 || interest >= 7) return 'cell-med';
+      return 'cell-low';
+    }
+
+    function addStakeholder() {
+      const name = document.getElementById('stakeholderName').value.trim();
+      const role = document.getElementById('stakeholderRole').value.trim();
+      const influence = parseInt(document.getElementById('influence').value) || 5;
+      const interest = parseInt(document.getElementById('interest').value) || 5;
+      const expectations = document.getElementById('expectations').value.trim();
+
+      if (!name) { alert('Bitte einen Namen eingeben'); return; }
+
+      stakeholders.push({ 
+        id: uid(), name, role, influence, interest, expectations,
+        cell: getMatrixCell(influence, interest)
+      });
+      saveState();
+      render();
+
+      document.getElementById('stakeholderName').value = '';
+      document.getElementById('stakeholderRole').value = '';
+      document.getElementById('influence').value = 5;
+      document.getElementById('interest').value = 5;
+      document.getElementById('expectations').value = '';
+    }
+
+    function deleteStakeholder(id) {
+      stakeholders = stakeholders.filter(s => s.id !== id);
+      saveState();
+      render();
+    }
+
+    function renderMatrix() {
+      const grid = document.getElementById('matrixGrid');
+      let html = '<div class="matrix-header"></div>';
+      ['Niedrig<br>1-3', 'Mittel<br>4-6', 'Hoch<br>7-10', 'Sehr hoch'].forEach(h => html += `<div class="matrix-header">${h}</div>`);
+
+      const yLabels = ['Sehr hoch', 'Hoch<br>7-10', 'Mittel<br>4-6', 'Niedrig<br>1-3'];
+      const yRanges = [[9,10], [7,8], [4,6], [1,3]];
+      const xRanges = [[1,3], [4,6], [7,8], [9,10]];
+
+      for (let row = 0; row < 4; row++) {
+        html += `<div class="matrix-y-label">${yLabels[row]}</div>`;
+        for (let col = 0; col < 4; col++) {
+          const influence = yRanges[row][1];
+          const interest = xRanges[col][1];
+          const cellClass = getCellClass(influence, interest);
+          const cellStakeholders = stakeholders.filter(s => 
+            s.influence >= yRanges[row][0] && s.influence <= yRanges[row][1] &&
+            s.interest >= xRanges[col][0] && s.interest <= xRanges[col][1]
+          );
+          
+          html += `<div class="matrix-cell ${cellClass}">`;
+          cellStakeholders.forEach(s => {
+            html += `<div class="stakeholder-item" onclick="highlightStakeholder('${s.id}')">
+              <div class="stakeholder-name">${s.name}</div>
+              <div class="stakeholder-role">${s.role || 'Keine Rolle'}</div>
+            </div>`;
+          });
+          html += '</div>';
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    function highlightStakeholder(id) {
+      const el = document.getElementById(`stakeholder-${id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.background = '#fff4e7';
+        setTimeout(() => el.style.background = '', 2000);
+      }
+    }
+
+    function renderList() {
+      const list = document.getElementById('stakeholdersList');
+      if (!stakeholders.length) {
+        list.innerHTML = '<p style="color:var(--text-soft);text-align:center;padding:40px;">Noch keine Stakeholder erfasst</p>';
+        return;
+      }
+
+      const sorted = [...stakeholders].sort((a, b) => (b.influence + b.interest) - (a.influence + a.interest));
+
+      list.innerHTML = sorted.map(s => {
+        const total = s.influence + s.interest;
+        const priorityClass = total >= 14 ? 'priority-high' : total >= 10 ? 'priority-med' : 'priority-low';
+        const strategy = s.influence >= 7 && s.interest >= 7 ? 'Engagement - Involvieren' :
+                        s.influence >= 7 ? 'Zufriedenstellen - Wenig Involvierung' :
+                        s.interest >= 7 ? 'Informieren - Halten auf dem Laufenden' :
+                        'Überwachen - Minimale Anstrengung';
+
+        return `<div class="stakeholder-card" id="stakeholder-${s.id}">
+          <div class="stakeholder-info">
+            <h4>${s.name}</h4>
+            <p>${s.role || 'Keine Rolle definiert'}${s.expectations ? ' • ' + s.expectations : ''}</p>
+          </div>
+          <div class="score-box">
+            <div class="label">Einfluss</div>
+            <div class="value">${s.influence}/10</div>
+          </div>
+          <div class="score-box">
+            <div class="label">Interesse</div>
+            <div class="value">${s.interest}/10</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="${priorityClass}" style="font-weight:700;margin-bottom:4px;">${strategy}</div>
+            <button class="btn-danger" style="min-height:32px;padding:6px 12px;font-size:12px;" onclick="deleteStakeholder('${s.id}')">Löschen</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function render() {
+      renderMatrix();
+      renderList();
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(stakeholders)); }
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { try { stakeholders = JSON.parse(raw); return true; } catch {} }
+      return false;
+    }
+
+    function loadExample() {
+      stakeholders = [
+        { id: uid(), name: 'CEO', role: 'Entscheidungsbefugt', influence: 10, interest: 8, expectations: 'ROI steigern', cell: 'high-high' },
+        { id: uid(), name: 'Marketing Director', role: 'Projektsponsor', influence: 8, interest: 9, expectations: 'Markenbekanntheit', cell: 'high-high' },
+        { id: uid(), name: 'IT Abteilung', role: 'Implementierung', influence: 6, interest: 5, expectations: 'Technische Umsetzbarkeit', cell: 'low-low' },
+        { id: uid(), name: 'Vertrieb', role: 'Endnutzer', influence: 5, interest: 8, expectations: 'Mehr Leads', cell: 'low-high' },
+        { id: uid(), name: 'Finanzvorstand', role: 'Budgetgenehmigung', influence: 9, interest: 4, expectations: 'Kosten kontrollieren', cell: 'high-low' },
+        { id: uid(), name: 'Externe Berater', role: 'Unterstützung', influence: 3, interest: 6, expectations: 'Projekt erfolgreich', cell: 'low-low' }
+      ];
+      saveState();
+      render();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addStakeholder);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('saveBtn').addEventListener('click', () => { saveState(); alert('Gespeichert!'); });
+    document.getElementById('loadBtn').addEventListener('click', () => { if (loadState()) { render(); alert('Geladen!'); } else alert('Keine Daten'); });
+    document.getElementById('resetBtn').addEventListener('click', () => { if (confirm('Zurücksetzen?')) { stakeholders = []; saveState(); render(); } });
+
+    if (!loadState()) loadExample();
+    else render();
+  </script>
+  <script src="header-loader.js"></script>
+</body>
+</html>

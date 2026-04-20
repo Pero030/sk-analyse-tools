@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=5.0" />
+  <title>SK Analyse Tools – Startseite</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-strong: #f1f5f9;
+      --border: #d8e1ec;
+      --border-strong: #c7d2e0;
+      --text: #172033;
+      --text-soft: #5b6678;
+      --primary: #172033;
+      --primary-hover: #0f172a;
+      --accent: #225ea8;
+      --accent-hover: #1a4a84;
+      --success: #13795b;
+      --warning: #b26a00;
+      --danger: #c62828;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --transition: 0.18s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 30%),
+        linear-gradient(180deg, #f4f7fb 0%, var(--bg) 100%);
+      padding-top: 60px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+    }
+
+    .app {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+      min-width: 1200px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      padding: 28px 30px;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 36px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 900px;
+      font-size: 15px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .content {
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .welcome-box {
+      padding: 22px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .welcome-box p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 220px;
+      transition:
+        transform var(--transition),
+        box-shadow var(--transition),
+        border-color var(--transition);
+    }
+
+    .tool-card:hover {
+      transform: translateY(-2px);
+      border-color: #b6c5d7;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .tool-type {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      font-weight: 700;
+    }
+
+    .tool-card h3 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .tool-card p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.55;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .tool-meta {
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    .tool-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .tool-link,
+    .placeholder-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition:
+        background var(--transition),
+        transform var(--transition),
+        border-color var(--transition),
+        color var(--transition);
+    }
+
+    .tool-link:hover,
+    .placeholder-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tool-link.primary {
+      background: var(--primary);
+      color: #fff;
+      border: 1px solid var(--primary);
+    }
+
+    .tool-link.primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .tool-link.secondary,
+    .placeholder-btn {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+    }
+
+    .tool-link.secondary:hover,
+    .placeholder-btn:hover {
+      background: var(--surface-soft);
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border-strong);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      color: var(--text-soft);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toolbar-left p {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .search-wrap {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .search-input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #8ca3c4;
+      box-shadow: 0 0 0 4px rgba(140, 163, 196, 0.18);
+    }
+
+    @media (max-width: 1280px) {
+      .tool-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 960px) {
+      .app {
+        min-width: auto;
+        padding: 16px 12px 28px;
+      }
+
+      .tool-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 20px 18px;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+      }
+    }
+
+    /* Verbesserte Responsiveness für niedrige Zoom-Stufen */
+    @media (max-width: 400px) {
+      .hero h1 {
+        font-size: 22px;
+      }
+
+      .hero p {
+        font-size: 14px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .tool-card h3 {
+        font-size: 18px;
+      }
+
+      .tool-card p {
+        font-size: 13px;
+      }
+
+      .tool-link,
+      .placeholder-btn {
+        font-size: 13px;
+        padding: 8px 12px;
+        min-height: 36px;
+      }
+    }
+
+    /* Minimale Schriftgrößen für sehr kleine Viewports */
+    @media (max-width: 300px) {
+      body {
+        font-size: 14px;
+      }
+
+      .hero h1 {
+        font-size: 18px;
+      }
+
+      .tool-card {
+        padding: 14px;
+        min-height: auto;
+      }
+
+      .tool-card h3 {
+        font-size: 16px;
+      }
+
+      .tool-type {
+        font-size: 11px;
+      }
+
+      .tool-meta {
+        font-size: 12px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+    }
+
+    /* Touch-Optimierung für kleine Displays */
+    @media (max-width: 400px) {
+      .tool-link,
+      .placeholder-btn {
+        min-height: 44px;
+        padding: 12px 16px;
+      }
+    }
+
+    /* Global Header Styles */
+    .global-header {
+      background: linear-gradient(135deg, #172033 0%, #22304a 100%);
+      color: #fff;
+      padding: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+    }
+    
+    .header-container {
+      width: 100%;
+      height: 60px;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .header-logo {
+      position: absolute;
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .logo-icon { font-size: 24px; }
+
+    .header-nav {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    
+    .nav-dropdown {
+      position: relative;
+    }
+    
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.85);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #fff;
+      min-width: 220px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+      padding: 8px;
+      padding-top: 12px;
+      margin-top: 0;
+    }
+    
+    .dropdown-content::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 20px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      transform: rotate(45deg);
+    }
+    
+    .nav-dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Alle Dropdowns nach links ausrichten */
+    .nav-dropdown .dropdown-content {
+      left: auto;
+      right: 0;
+    }
+
+    .nav-dropdown .dropdown-content::before {
+      left: auto;
+      right: 20px;
+    }
+    
+    .dropdown-content a {
+      display: block;
+      padding: 10px 14px;
+      color: #172033;
+      text-decoration: none;
+      font-size: 14px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+    
+    .dropdown-content a:hover {
+      background: #f1f5f9;
+      color: #225ea8;
+    }
+    
+    .header-search {
+      margin-right: 16px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      font-size: 14px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    .header-search .search-input {
+      width: 200px;
+      min-height: 36px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      padding: 8px 12px 8px 32px;
+      font-size: 14px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      transition: all 0.2s ease;
+    }
+    
+    .header-search .search-input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .header-search .search-input:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.15);
+      width: 260px;
+    }
+    
+    /* Such-Icon - Standard: neben Logo */
+    .search-toggle {
+      position: absolute;
+      left: 240px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: block;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      z-index: 1001;
+    }
+
+    .search-toggle:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Such-Overlay */
+    .search-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(23, 32, 51, 0.98);
+      z-index: 2000;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 100px;
+    }
+
+    .search-overlay.active {
+      display: flex;
+    }
+
+    .search-overlay-content {
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    .search-overlay-input {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      outline: none;
+    }
+
+    .search-overlay-input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .search-overlay-input:focus {
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .search-overlay-close {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+
+    .search-overlay-close:hover {
+      opacity: 1;
+    }
+
+    /* Hamburger Menü */
+    .hamburger-menu {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1002;
+    }
+
+    .hamburger-menu:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Mobile Navigation Overlay */
+    .mobile-nav-overlay {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #172033;
+      z-index: 999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .mobile-nav-overlay.active {
+      display: block;
+    }
+
+    .mobile-nav-section {
+      margin-bottom: 24px;
+    }
+
+    .mobile-nav-title {
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mobile-nav-links a {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 0;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .mobile-nav-links a:hover {
+      color: rgba(255,255,255,0.8);
+    }
+
+    @media (max-width: 1100px) {
+      .header-nav { display: none; }
+      .hamburger-menu { display: block; }
+      .search-toggle {
+        left: auto;
+        right: 70px;
+      }
+    }
+
+    /* Standard: Nur Icon, kein Input-Feld */
+    .header-search .search-input {
+      display: none;
+    }
+
+    .search-toggle {
+      display: block;
+    }
+
+    .header-search {
+      width: auto;
+    }
+
+    .search-icon {
+      display: none;
+    }
+
+    /* Ab 1400px: Input-Feld sichtbar */
+    @media (min-width: 1400px) {
+      .header-search .search-input {
+        display: block;
+      }
+
+      .search-toggle {
+        display: none;
+      }
+
+      .search-icon {
+        display: block;
+      }
+    }
+
+    /* Footer Styles */
+    .global-footer {
+      background: #172033;
+      color: rgba(255,255,255,0.7);
+      padding: 20px;
+    }
+
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .footer-left a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+    }
+
+    .footer-left a:hover {
+      color: #fff;
+    }
+
+    .footer-separator {
+      opacity: 0.3;
+    }
+
+    .footer-right {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 960px) {
+      .footer-container {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .footer-left {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    body {
+      padding-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Global Header -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="index.html" class="header-logo">
+        <span class="logo-icon">📊</span>
+        <span class="logo-text">Analyse Tools</span>
+      </a>
+      
+      <button class="search-toggle" id="searchToggle" title="Suche öffnen">🔍</button>
+      <button class="hamburger-menu" id="hamburgerMenu" title="Menü öffnen">☰</button>
+
+      <nav class="header-nav">
+        <div class="header-search">
+          <span class="search-icon">🔍</span>
+          <input id="searchInput" class="search-input" type="text" placeholder="Tool suchen..." />
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-btn">Strategie ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/swot-analyse/">SWOT Analyse</a>
+            <a href="tools/pestel-analyse/">PESTEL Analyse</a>
+            <a href="tools/five-forces/">Five Forces</a>
+            <a href="tools/bcg-matrix/">BCG Matrix</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Marketing ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/customer-journey/">Customer Journey</a>
+            <a href="tools/buyer-persona/">Buyer Persona</a>
+            <a href="tools/marketing-roi/">Marketing-ROI</a>
+            <a href="tools/ab-test/">A/B-Test</a>
+            <a href="tools/marketing-mix/">4P Marketing-Mix</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">E-Commerce ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/clv-rechner/">CLV Rechner</a>
+            <a href="tools/cac-analyse/">CAC Analyse</a>
+            <a href="tools/retourenanalyse/">Retourenanalyse</a>
+            <a href="tools/preisgestaltung/">Preisgestaltung</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Entscheidung ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/cost-benefit/">Cost-Benefit</a>
+            <a href="tools/nutzwertanalyse/">Nutzwertanalyse</a>
+            <a href="tools/feature-scoring/">Feature Scoring</a>
+            <a href="tools/projektbewertung/">Projektbewertung</a>
+            <a href="tools/massnahmenbewertung/">Maßnahmenbewertung</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Performance ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/kpi-analyse/">KPI Analyse</a>
+            <a href="tools/funnel-analyse/">Funnel Analyse</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Risiko ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/risikoanalyse/">Risikoanalyse</a>
+            <a href="tools/priorisierung/">Priorisierung</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Intern ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/stakeholder-analyse/">Stakeholder</a>
+            <a href="tools/prozessanalyse/">Prozessanalyse</a>
+            <a href="tools/ressourcen-planung/">Ressourcen</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn">Extern ▼</button>
+          <div class="dropdown-content">
+            <a href="tools/wettbewerbsanalyse/">Wettbewerb</a>
+            <a href="tools/marktsegmentierung/">Marktsegmentierung</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Overlay -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay">
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Strategie</div>
+      <div class="mobile-nav-links">
+        <a href="tools/swot-analyse/">SWOT Analyse</a>
+        <a href="tools/pestel-analyse/">PESTEL Analyse</a>
+        <a href="tools/five-forces/">Five Forces</a>
+        <a href="tools/bcg-matrix/">BCG Matrix</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Marketing</div>
+      <div class="mobile-nav-links">
+        <a href="tools/customer-journey/">Customer Journey</a>
+        <a href="tools/buyer-persona/">Buyer Persona</a>
+        <a href="tools/marketing-roi/">Marketing-ROI</a>
+        <a href="tools/ab-test/">A/B-Test</a>
+        <a href="tools/marketing-mix/">4P Marketing-Mix</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">E-Commerce</div>
+      <div class="mobile-nav-links">
+        <a href="tools/clv-rechner/">CLV Rechner</a>
+        <a href="tools/cac-analyse/">CAC Analyse</a>
+        <a href="tools/retourenanalyse/">Retourenanalyse</a>
+        <a href="tools/preisgestaltung/">Preisgestaltung</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Entscheidung</div>
+      <div class="mobile-nav-links">
+        <a href="tools/cost-benefit/">Cost-Benefit</a>
+        <a href="tools/nutzwertanalyse/">Nutzwertanalyse</a>
+        <a href="tools/feature-scoring/">Feature Scoring</a>
+        <a href="tools/projektbewertung/">Projektbewertung</a>
+        <a href="tools/massnahmenbewertung/">Maßnahmenbewertung</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Performance</div>
+      <div class="mobile-nav-links">
+        <a href="tools/kpi-analyse/">KPI Analyse</a>
+        <a href="tools/funnel-analyse/">Funnel Analyse</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Risiko</div>
+      <div class="mobile-nav-links">
+        <a href="tools/risikoanalyse/">Risikoanalyse</a>
+        <a href="tools/priorisierung/">Priorisierung</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Intern</div>
+      <div class="mobile-nav-links">
+        <a href="tools/stakeholder-analyse/">Stakeholder</a>
+        <a href="tools/prozessanalyse/">Prozessanalyse</a>
+        <a href="tools/ressourcen-planung/">Ressourcen</a>
+      </div>
+    </div>
+    <div class="mobile-nav-section">
+      <div class="mobile-nav-title">Extern</div>
+      <div class="mobile-nav-links">
+        <a href="tools/wettbewerbsanalyse/">Wettbewerb</a>
+        <a href="tools/marktsegmentierung/">Marktsegmentierung</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="app">
+      <section class="hero">
+        <h1>Analyse Tools Dashboard</h1>
+        <p>27 professionelle Analyse-Tools für Strategie, Marketing, E-Commerce und Unternehmensführung.</p>
+      </section>
+
+      <main class="content">
+          <section class="stats">
+            <div class="stat-card">
+              <div class="stat-label">Tools gesamt</div>
+              <div class="stat-value" id="toolCount">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Scoring-Tools</div>
+              <div class="stat-value" id="scoringCount">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Klassische Analyse</div>
+              <div class="stat-value" id="classicCount">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Aktueller Filter</div>
+              <div class="stat-value" id="activeFilterLabel">Alle</div>
+            </div>
+          </section>
+
+          <section id="toolGrid" class="tool-grid"></section>
+        </main>
+      </div>
+  </div>
+
+  <!-- Such-Overlay für hohen Zoom -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="search-overlay-content">
+      <input type="text" class="search-overlay-input" id="overlaySearchInput" placeholder="Tool suchen..." />
+      <button class="search-overlay-close" id="searchOverlayClose">×</button>
+    </div>
+  </div>
+
+  <script>
+    const tools = [
+      {
+        id: "swot",
+        title: "SWOT Analyse",
+        type: "strategy",
+        mode: "Klassisch",
+        description: "Stärken, Schwächen, Chancen und Risiken strukturiert erfassen.",
+        file: "SWOT-Analyse.html"
+      },
+      {
+        id: "pestel",
+        title: "PESTEL Analyse",
+        type: "strategy",
+        mode: "Klassisch",
+        description: "Politische, wirtschaftliche, soziale, technologische, ökologische und rechtliche Faktoren erfassen.",
+        file: "PESTEL-Analyse.html"
+      },
+      {
+        id: "five-forces",
+        title: "Five Forces Analyse",
+        type: "strategy",
+        mode: "Klassisch",
+        description: "Wettbewerb, Lieferanten, Kunden, neue Anbieter und Ersatzprodukte analysieren.",
+        file: "Five Forces Analyse.html"
+      },
+      {
+        id: "bcg",
+        title: "BCG Matrix",
+        type: "strategy",
+        mode: "Scoring",
+        description: "Portfolio-Bewertung mit automatischer Einordnung in Star, Cash Cow, Question Mark und Dog.",
+        file: "BCG Matrix.html"
+      },
+      {
+        id: "cost-benefit",
+        title: "Cost-Benefit Analyse",
+        type: "decision",
+        mode: "Scoring",
+        description: "Kosten und Nutzen vergleichen und automatisch bewerten.",
+        file: "Cost-Benefit Analyse.html"
+      },
+      {
+        id: "funnel",
+        title: "Funnel Analyse",
+        type: "performance",
+        mode: "Scoring",
+        description: "Drop-offs, Conversion und größte Schwachstelle im Funnel erkennen.",
+        file: "Funnel Analyse.html"
+      },
+      {
+        id: "kpi",
+        title: "KPI Analyse",
+        type: "performance",
+        mode: "Scoring",
+        description: "Ziel-Ist-Vergleich, Zielerreichung und KPI-Status automatisch berechnen.",
+        file: "KPI Analyse.html"
+      },
+      {
+        id: "risk-analysis",
+        title: "Risikoanalyse",
+        type: "risk",
+        mode: "Scoring",
+        description: "Risiken bewerten, priorisieren und in einer Risikomatrix anzeigen.",
+        file: "Risikoanalyse.html"
+      },
+      {
+        id: "prioritization",
+        title: "Priorisierungstool",
+        type: "risk",
+        mode: "Scoring",
+        description: "Aufgaben, Themen oder Maßnahmen nach Score priorisieren.",
+        file: "Priorisierungstool.html"
+      },
+      {
+        id: "feature-scoring",
+        title: "Feature Scoring",
+        type: "decision",
+        mode: "Scoring",
+        description: "Features oder Ideen nach Impact, Aufwand, Confidence und Strategie bewerten.",
+        file: "Feature-Scoring.html"
+      },
+      {
+        id: "project-scoring",
+        title: "Projektbewertung",
+        type: "decision",
+        mode: "Scoring",
+        description: "Projekte nach Nutzen, Aufwand, Risiko und strategischer Relevanz bewerten.",
+        file: "Projektbewertung.html"
+      },
+      {
+        id: "nutzwert",
+        title: "Nutzwertanalyse",
+        type: "decision",
+        mode: "Scoring",
+        description: "Alternativen anhand gewichteter Kriterien vergleichen und bewerten.",
+        file: "Nutzwertanalyse.html"
+      },
+      {
+        id: "massnahmen",
+        title: "Maßnahmenbewertung",
+        type: "decision",
+        mode: "Scoring",
+        description: "Maßnahmen nach Wirksamkeit, Aufwand und Umsetzbarkeit bewerten.",
+        file: "Maßnahmenbewertung.html"
+      },
+      {
+        id: "customer-journey",
+        title: "Customer Journey Map",
+        type: "marketing",
+        mode: "Klassisch",
+        description: "Kundenreise visualisieren – Touchpoints, Emotionen und Pain Points erfassen.",
+        file: "Customer Journey Map.html"
+      },
+      {
+        id: "buyer-persona",
+        title: "Buyer Persona Tool",
+        type: "marketing",
+        mode: "Klassisch",
+        description: "Ideale Kundenprofile erstellen – Demografie, Verhalten, Bedürfnisse erfassen.",
+        file: "Buyer Persona Tool.html"
+      },
+      {
+        id: "marketing-roi",
+        title: "Marketing-ROI Rechner",
+        type: "marketing",
+        mode: "Scoring",
+        description: "Return on Investment für Marketing-Kampagnen berechnen.",
+        file: "Marketing-ROI Rechner.html"
+      },
+      {
+        id: "ab-test",
+        title: "A/B-Test Rechner",
+        type: "marketing",
+        mode: "Scoring",
+        description: "Statistische Signifikanz berechnen – Conversion Rates vergleichen.",
+        file: "AB-Test Rechner.html"
+      },
+      {
+        id: "4p-marketing",
+        title: "4P Marketing-Mix",
+        type: "marketing",
+        mode: "Klassisch",
+        description: "Produkt, Preis, Platz und Promotion analysieren.",
+        file: "4P Marketing-Mix.html"
+      },
+      {
+        id: "clv",
+        title: "Customer Lifetime Value",
+        type: "ecommerce",
+        mode: "Scoring",
+        description: "Lebenszeitwert eines Kunden berechnen.",
+        file: "Customer Lifetime Value Rechner.html"
+      },
+      {
+        id: "cac",
+        title: "Customer Acquisition Cost",
+        type: "ecommerce",
+        mode: "Scoring",
+        description: "Kundenakquisitionskosten nach Kanal analysieren.",
+        file: "Customer Acquisition Cost Analyse.html"
+      },
+      {
+        id: "retouren",
+        title: "Retourenanalyse",
+        type: "ecommerce",
+        mode: "Scoring",
+        description: "Retourenquote analysieren – Produkte, Kosten und Ursachen erfassen.",
+        file: "Retourenanalyse.html"
+      },
+      {
+        id: "preisgestaltung",
+        title: "Preisgestaltungs-Analyse",
+        type: "ecommerce",
+        mode: "Scoring",
+        description: "Produktpreise analysieren – Deckungsbeitrag und Preisstrategien.",
+        file: "Preisgestaltungs-Analyse.html"
+      },
+      {
+        id: "stakeholder",
+        title: "Stakeholder-Analyse",
+        type: "intern",
+        mode: "Klassisch",
+        description: "Stakeholder nach Einfluss und Interesse einordnen.",
+        file: "Stakeholder-Analyse.html"
+      },
+      {
+        id: "prozess",
+        title: "Prozessanalyse",
+        type: "intern",
+        mode: "Klassisch",
+        description: "Prozessschritte analysieren – Zeit, Kosten und Flaschenhälse erfassen.",
+        file: "Prozessanalyse.html"
+      },
+      {
+        id: "ressourcen",
+        title: "Ressourcen-Planung",
+        type: "intern",
+        mode: "Scoring",
+        description: "Teamkapazitäten planen – Verfügbarkeit und Engpässe erkennen.",
+        file: "Ressourcen-Planung.html"
+      },
+      {
+        id: "wettbewerb",
+        title: "Wettbewerbsanalyse",
+        type: "extern",
+        mode: "Scoring",
+        description: "Wettbewerber analysieren – Stärken, Schwächen, Positionierung.",
+        file: "Wettbewerbsanalyse.html"
+      },
+      {
+        id: "marktsegmentierung",
+        title: "Marktsegmentierung",
+        type: "extern",
+        mode: "Scoring",
+        description: "Marktsegmente definieren und bewerten – Größe, Wachstum, Attraktivität.",
+        file: "Marktsegmentierung.html"
+      }
+    ];
+
+    let activeFilter = "all";
+    let activeSearch = "";
+
+    const toolGrid = document.getElementById("toolGrid");
+    const toolCount = document.getElementById("toolCount");
+    const scoringCount = document.getElementById("scoringCount");
+    const classicCount = document.getElementById("classicCount");
+    const activeFilterLabel = document.getElementById("activeFilterLabel");
+    const searchInput = document.getElementById("searchInput");
+
+    function getFilterLabel(value) {
+      if (value === "all") return "Alle";
+      if (value === "decision") return "Entscheidungs-Tools";
+      if (value === "performance") return "Performance & KPI";
+      if (value === "risk") return "Risiko & Priorisierung";
+      if (value === "strategy") return "Strategie & Portfolio";
+      if (value === "marketing") return "Marketing";
+      if (value === "ecommerce") return "E-Commerce";
+      if (value === "intern") return "Interne Analyse";
+      if (value === "extern") return "Externe Analyse";
+      return "Alle";
+    }
+
+    function renderStats() {
+      toolCount.textContent = tools.length;
+      scoringCount.textContent = tools.filter(tool => tool.mode === "Scoring").length;
+      classicCount.textContent = tools.filter(tool => tool.mode !== "Scoring").length;
+      activeFilterLabel.textContent = getFilterLabel(activeFilter);
+    }
+
+    function getFilteredTools() {
+      return tools.filter(tool => {
+        const matchesFilter = activeFilter === "all" ? true : tool.type === activeFilter;
+        const text = `${tool.title} ${tool.description} ${tool.mode}`.toLowerCase();
+        const matchesSearch = text.includes(activeSearch.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+    }
+
+    function renderTools() {
+      const filtered = getFilteredTools();
+
+      if (!filtered.length) {
+        toolGrid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            Keine Tools für diesen Filter gefunden.
+          </div>
+        `;
+        return;
+      }
+
+      toolGrid.innerHTML = filtered.map(tool => {
+        const hasFile = tool.file && tool.file.trim() !== "";
+        return `
+          <article class="tool-card" id="${tool.id}">
+            <div class="tool-type">${tool.mode}</div>
+            <h3>${escapeHtml(tool.title)}</h3>
+            <p>${escapeHtml(tool.description)}</p>
+            <div class="tool-meta">Kategorie: ${escapeHtml(getFilterLabel(tool.type))}</div>
+            <div class="tool-actions">
+              ${
+                hasFile
+                  ? `<a class="tool-link primary" href="${escapeHtml(tool.file)}">Tool öffnen</a>`
+                  : `<span class="placeholder-btn">Datei noch eintragen</span>`
+              }
+              <button class="tool-link secondary" type="button" onclick="showToolInfo('${tool.id}')">Info</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function setActiveFilter(filter) {
+      activeFilter = filter;
+
+      document.querySelectorAll("[data-filter]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.filter === filter);
+      });
+
+      renderStats();
+      renderTools();
+    }
+
+    function showToolInfo(id) {
+      const tool = tools.find(item => item.id === id);
+      if (!tool) return;
+
+      alert(
+        `Tool: ${tool.title}\n` +
+        `Typ: ${tool.mode}\n` +
+        `Kategorie: ${getFilterLabel(tool.type)}\n\n` +
+        `${tool.description}\n\n` +
+        `Datei: ${tool.file || "noch nicht eingetragen"}`
+      );
+    }
+
+    document.querySelectorAll("[data-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setActiveFilter(btn.dataset.filter);
+      });
+    });
+
+    document.querySelectorAll("[data-jump]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.jump;
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    });
+
+    searchInput.addEventListener("input", event => {
+      activeSearch = event.target.value.trim();
+      renderTools();
+    });
+
+    // Such-Overlay für hohen Zoom
+    const searchToggle = document.getElementById("searchToggle");
+    const searchOverlay = document.getElementById("searchOverlay");
+    const overlaySearchInput = document.getElementById("overlaySearchInput");
+    const searchOverlayClose = document.getElementById("searchOverlayClose");
+
+    searchToggle.addEventListener("click", () => {
+      searchOverlay.classList.add("active");
+      overlaySearchInput.focus();
+    });
+
+    searchOverlayClose.addEventListener("click", () => {
+      searchOverlay.classList.remove("active");
+    });
+
+    overlaySearchInput.addEventListener("input", event => {
+      activeSearch = event.target.value.trim();
+      renderTools();
+    });
+
+    overlaySearchInput.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        searchOverlay.classList.remove("active");
+      }
+    });
+
+    searchOverlay.addEventListener("click", event => {
+      if (event.target === searchOverlay) {
+        searchOverlay.classList.remove("active");
+      }
+    });
+
+    // Hamburger Menü Toggle
+    const hamburgerMenu = document.getElementById("hamburgerMenu");
+    const mobileNavOverlay = document.getElementById("mobileNavOverlay");
+
+    hamburgerMenu.addEventListener("click", () => {
+      mobileNavOverlay.classList.toggle("active");
+      hamburgerMenu.textContent = mobileNavOverlay.classList.contains("active") ? "✕" : "☰";
+    });
+
+    // Mobile Nav Links schließen Overlay beim Klick
+    document.querySelectorAll(".mobile-nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        mobileNavOverlay.classList.remove("active");
+        hamburgerMenu.textContent = "☰";
+      });
+    });
+
+    // ESC schließt Mobile Nav
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        mobileNavOverlay.classList.remove("active");
+        hamburgerMenu.textContent = "☰";
+      }
+    });
+
+    // Header Dropdown Click Handler
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const dropdown = btn.nextElementSibling;
+        const isOpen = dropdown.style.display === 'block';
+        
+        document.querySelectorAll('.dropdown-content').forEach(d => {
+          d.style.display = 'none';
+        });
+        
+        if (!isOpen) {
+          dropdown.style.display = 'block';
+        }
+      });
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-dropdown')) {
+        document.querySelectorAll('.dropdown-content').forEach(d => {
+          d.style.display = 'none';
+        });
+      }
+    });
+
+    // Cookie/LocalStorage Hinweis
+    if (!localStorage.getItem('cookie_consent')) {
+      const banner = document.createElement('div');
+      banner.innerHTML = `
+        <div class="cookie-banner" style="
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: #172033;
+          color: #fff;
+          padding: 16px 20px;
+          font-size: 14px;
+          z-index: 9999;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+          box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        ">
+          <span>🔒 Diese Seite speichert Daten lokal in deinem Browser (LocalStorage), um die Eingaben zu sichern. Keine Daten werden an Server übertragen.</span>
+          <button class="cookie-btn" style="
+            background: #fff;
+            color: #172033;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+          ">Verstanden</button>
+        </div>
+      `;
+      document.body.appendChild(banner);
+      
+      banner.querySelector('.cookie-btn').addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'true');
+        banner.remove();
+      });
+    }
+
+    renderStats();
+    renderTools();
+  </script>
+  
+  <footer class="global-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span>© 2026 SK Analyse Tools</span>
+        <span class="footer-separator">|</span>
+        <a href="impressum.html">Impressum</a>
+        <span class="footer-separator">|</span>
+        <a href="datenschutz.html">Datenschutz</a>
+      </div>
+      <div class="footer-right">
+        <span>🔒 Daten nur lokal im Browser gespeichert – Keine Server-Speicherung</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
